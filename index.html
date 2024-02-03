@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4" crossorigin="anonymous"></script>
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="text" id="room" placeholder="Room ID" />
+  </div>
+  <div class="chat-body">
+  </div>
+  <form action="" class="chat-form">
+    <input type="text" class="chat-input" placeholder="Type a message...">
+    <button type="submit" class="chat-submit">Send</button>
+  </form>
+  <div>
+    <h3>Users</h3>
+    <ul class="users-list">
+    </ul>
+  </div>
+</body>
+<script>
+  const socket = io('http://localhost:3000');
+  let currentRoom = null;
+  let username = null;
+  let socketId = null;
+
+  const chatBody = document.querySelector('.chat-body');
+  const chatForm = document.querySelector('.chat-form');
+  const chatInput = document.querySelector('.chat-input');
+  const roomInput = document.querySelector('#room');
+  const usernameInput = document.querySelector('#username');
+
+  socket.on('get-socket-id', (socketId) => {
+    socketId = socketId;
+  });
+
+  socket.on('user-active', ({ username, socketId }) => {
+    const userElement = document.createElement('li');
+    userElement.innerHTML = username;
+    const usersList = document.querySelector('.users-list');
+    const activeSpan = document.createElement('span');
+    activeSpan.innerHTML = ' - active';
+    const userId = document.createElement('span');
+    userId.innerHTML = ` - ${socketId}`;
+    
+    userElement.appendChild(activeSpan);
+    userElement.appendChild(userId);
+    usersList.appendChild(userElement);
+
+    const firstChild = usersList.firstChild;
+
+    if (firstChild) {
+      usersList.insertBefore(userElement, firstChild);
+    } else {
+      usersList.appendChild(userElement);
+    }
+  });
+
+  socket.on('user-inactive', (socketId) => {
+    const usersList = document.querySelector('.users-list');
+    
+    usersList.childNodes.forEach((child) => {
+      if (child.innerHTML.includes(socketId)) {
+        child.innerHTML = child.innerHTML.replace('active', 'inactive');
+      }
+    });
+  });
+
+  socket.on('update-socket-id', ({ oldSocketId, newSocketId }) => {
+    const usersList = document.querySelector('.users-list');
+
+    usersList.childNodes.forEach((child) => {
+      if (child.innerHTML.includes(oldSocketId)) {
+        child.innerHTML = child.innerHTML.replace(oldSocketId, newSocketId);
+        child.innerHTML = child.innerHTML.replace('inactive', 'active');
+      }
+    });
+  });
+
+  fetch('http://localhost:3000/users')
+    .then((res) => res.json())
+    .then((data) => {
+      const usersList = document.querySelector('.users-list');
+      usersList.innerHTML = '';
+
+      data.forEach((user) => {
+        const userElement = document.createElement('li');
+        userElement.innerHTML = user.username;
+        const usersList = document.querySelector('.users-list');
+        const activeSpan = document.createElement('span');
+        activeSpan.innerHTML = user.active ? ' - active' : ' - inactive';
+        const userId = document.createElement('span');
+        userId.innerHTML = ` - ${user.socketId}`;
+        
+        userElement.appendChild(activeSpan);
+        userElement.appendChild(userId);
+        usersList.appendChild(userElement);
+    
+        const firstChild = usersList.firstChild;
+    
+        if (firstChild) {
+          usersList.insertBefore(userElement, firstChild);
+        } else {
+          usersList.appendChild(userElement);
+        }
+      });
+    });
+
+  roomInput.addEventListener('change', (e) => {
+    if (currentRoom) {
+      socket.emit('leave', currentRoom);
+    }
+    
+    currentRoom = e.target.value;
+    socket.emit('join', currentRoom);
+    fetch(`http://localhost:3000/${currentRoom}/messages/`)
+      .then((res) => res.json())
+      .then((data) => {
+        chatBody.innerHTML = '';
+        data.forEach((message) => {
+          const messageElement = document.createElement('div');
+          messageElement.innerHTML = `<p>${message.username}: ${message.message}</p>`;
+          chatBody.appendChild(messageElement);
+        });
+      });
+  });
+
+  usernameInput.addEventListener('change', (e) => {
+    username = e.target.value;
+
+    if (username) {
+      socket.emit('user-active', username);
+    }
+  });
+
+  chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!username) {
+      alert('Please enter a username');
+    } else if (!currentRoom) {
+      alert('Please enter a room ID');
+    } else if (!chatInput.value) {
+      alert('Please enter a message');
+    } else {
+      socket.emit('message', { room: currentRoom, message: chatInput.value, username });
+      chatInput.value = '';
+    }
+  });
+
+  socket.on('message', ({ room, message, username }) => {
+    if (room === currentRoom) {
+      const messageElement = document.createElement('div');
+      messageElement.innerHTML = `<p>${username}: ${message}</p>`;
+      chatBody.appendChild(messageElement);
+    }
+  });
+
+</script>
+<style>
+  .chat-body {
+    height: 300px;
+    overflow-y: scroll;
+  }
+
+  .chat-form {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .chat-input {
+    flex: 1;
+  }
+
+  .chat-submit {
+    flex: 0;
+  }
+
+  .users-list {
+    list-style: none;
+  }
+
+  .users-list li {
+    margin-bottom: 10px;
+  }
+
+  .users-list li:first-child {
+    margin-top: 10px;
+  }
+
+  .users-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  .users-list li {
+    font-weight: bold;
+  }
+
+  .users-list li span {
+    font-weight: normal;
+  }
+</style>
+</html>
