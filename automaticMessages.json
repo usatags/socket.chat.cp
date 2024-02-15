@@ -1,0 +1,253 @@
+{
+  "salute": "Welcome to USATAGS.\n\nI issue  Temporary License Plates of the following states🇺🇸☑️:\n\n(1)Alabama(AB).\n(2)Arizona(AZ).\n(3)Arkansas(AR).\n(4)California(CA).\n(5)Colorado(CO).\n(6)Connecticut(CT).\n(7)Delaware(DE).\n(8)Florida(FL).\n(9)Georgia(GA).\n(10)Illinois(IL).\n(11)Indiana(IN).\n(12)Iowa(IA).\n(13)Kansas(KS).\n(14)Kentucky(KY).\n(15)Louisiana(LA).\n(16)Maryland(MD).\n(17)Massachusetts(MA).\n(18)Michigan(MI).\n(19)Minnesota(MN).\n(20)Missouri(MO).\n(21)Montana(MT).\n(22)Nevada(NV).\n(23)New Jersey(NJ).\n(24)New Mexico(NM).\n(25)North Carolina(NC).\n(26)North Dakota(ND).\n(27)Ohio(OH).\n(28)Oklahoma(OK).\n(29)Oregon(OR).\n(30)Pennsylvania(PA).\n(31)Rhode Island(RI).\n(32)South Carolina(SC).\n(33)Tennessee(TN).\n(34)Texas(TX).\n(35)Utah(UT).\n(36)Vermont(VT).\n(37)Virginia(VA).\n(38)Washington(WA).\n(39)West Virginia(WV).\n(40)Wisconsin(WI).\n(41)Wyoming(WY).",
+  "states": [
+    {
+      "id": "1",
+      "state": "Alabama",
+      "plates": "1) 20-Days 55$",
+      "options": [1]
+    },
+    {
+      "id": "2",
+      "state": "Arizona",
+      "plates": "1) 3-Days limited scope repais and emissions 20$\n2) 30-Days general use 65$\n3) 45-Days issued by dealers 85$\n4) 90-Days issued to residents to resolve paperwork issues 135$\n5) 90-Days issued to non-residents (out of state) 135$",
+      "options": [1, 2, 3, 4, 5]
+    },
+    {
+      "id": "3",
+      "state": "Arkansas",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "4",
+      "state": "California",
+      "plates": "1) 30-Days 55$\n2) 60-Days 95$",
+      "options": [1, 2]
+    },
+    {
+      "id": "5",
+      "state": "Colorado",
+      "plates": "1) 60-Days 95$",
+      "options": [1]
+    },
+    {
+      "id": "6",
+      "state": "Connecticut",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "7",
+      "state": "Delaware",
+      "plates": "1) 60-Days 95$",
+      "options": [1]
+    },
+    {
+      "id": "8",
+      "state": "Florida",
+      "plates": "1) 10-Days standard temporary plate 30$\n2) 30-Days pre-printed temporary plate 65$\n3) 90-Days temporary employment 145$",
+      "options": [1, 2, 3]
+    },
+    {
+      "id": "9",
+      "state": "Georgia",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "10",
+      "state": "Illinois",
+      "plates": "1) 90-Days 135$",
+      "options": [1]
+    },
+    {
+      "id": "11",
+      "state": "Indiana",
+      "plates": "1) 90-Days 135$",
+      "options": [1]
+    },
+    {
+      "id": "12",
+      "state": "Iowa",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "13",
+      "state": "Kansas",
+      "plates": "1) 60-Days 95$",
+      "options": [1]
+    },
+    {
+      "id": "14",
+      "state": "Kentucky",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "15",
+      "state": "Louisiana",
+      "plates": "1) 60-Days 95$",
+      "options": [1]
+    },
+    {
+      "id": "16",
+      "state": "Maryland",
+      "plates": "1) 90-Days 135$",
+      "options": [1]
+    },
+    {
+      "id": "17",
+      "state": "Massachusetts",
+      "plates": "1) 20-Days 55$",
+      "options": [1]
+    },
+    {
+      "id": "18",
+      "state": "Michigan",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$",
+      "options": [1, 2]
+    },
+    {
+      "id": "19",
+      "state": "Minnesota",
+      "plates": "1) 31-Days permit 70$",
+      "options": [1]
+    },
+    {
+      "id": "20",
+      "state": "Missouri",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$\n3) 90-Days 135$",
+      "options": [1, 2, 3]
+    },
+    {
+      "id": "21",
+      "state": "Montana",
+      "plates": "1) 40-Days 75$\n2) 90-Days 135$",
+      "options": [1, 2]
+    },
+    {
+      "id": "22",
+      "state": "Nevada",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "23",
+      "state": "New Jersey",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "24",
+      "state": "New Mexico",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "25",
+      "state": "North Carolina",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$",
+      "options": [1, 2]
+    },
+    {
+      "id": "26",
+      "state": "North Dakota",
+      "plates": "1) 30-Days motor vehicle permit for North Dakota residents only 65$\n2) 30-Days motor vehicle off highway permit for North Dakota residents only 65$\n3) 30-Days vehicle trailer permit for North Dakota residents only 95$\n4) 180-Days month motor vehicle permit for North Dakota residents only 300$\n5) 365-Days month motor vehicle permit for North Dakota residents only 500$",
+      "options": [1, 2, 3, 4, 5]
+    },
+    {
+      "id": "27",
+      "state": "Ohio",
+      "plates": "1) 45-Days 75$",
+      "options": [1]
+    },
+    {
+      "id": "28",
+      "state": "Oklahoma",
+      "plates": "1) 30-Days 65$",
+      "options": [1]
+    },
+    {
+      "id": "29",
+      "state": "Oregon",
+      "plates": "1) 10-Days 25$",
+      "options": [1]
+    },
+    {
+      "id": "30",
+      "state": "Pennsylvania",
+      "plates": "1) 60-Days 95$",
+      "options": [1]
+    },
+    {
+      "id": "31",
+      "state": "Rhode Island",
+      "plates": "1) 20-Days 55$",
+      "options": [1]
+    },
+    {
+      "id": "32",
+      "state": "South Carolina",
+      "plates": "1) 45-Days in state 75$\n2) 30-Days out of state 65$",
+      "options": [1, 2]
+    },
+    {
+      "id": "33",
+      "state": "Tennessee",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$",
+      "options": [1, 2]
+    },
+    {
+      "id": "34",
+      "state": "Texas",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$",
+      "options": [1, 2]
+    },
+    {
+      "id": "35",
+      "state": "Utah",
+      "plates": "1) 45-Days 75$",
+      "options": [1, 2]
+    },
+    {
+      "id": "36",
+      "state": "Vermont",
+      "plates": "1) 30-Days intrastate 95$\n2) 60-Days interstate 95$",
+      "options": [1, 2]
+    },
+    {
+      "id": "37",
+      "state": "Virginia",
+      "plates": "1) 30-Days 95$",
+      "options": [1]
+    },
+    {
+      "id": "38",
+      "state": "Washington",
+      "plates": "1) 45-Days 75$",
+      "options": [1]
+    },
+    {
+      "id": "39",
+      "state": "West Virginia",
+      "plates": "1) 90-Days 135$",
+      "options": [1]
+    },
+    {
+      "id": "40",
+      "state": "Wisconsin",
+      "plates": "1) 90-Days 135$",
+      "options": [1]
+    },
+    {
+      "id": "41",
+      "state": "Wyoming",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$\n3) 90-Days 135$",
+      "options": [1, 2, 3]
+    }
+  ],
+  "options": "1)Temporary license plate\n2) Temporary insurance vehicle",
+  "message": "PLEASE REMEMBER THAT TO ISSUE THE PLATE YOU MUST HAVE INSURANCE, IF YOU DO NOT HAVE IT YOU CAN ISSUE IT WITH US"
+}
