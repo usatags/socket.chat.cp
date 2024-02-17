@@ -4,10 +4,11 @@ CREATE TABLE "User" (
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "image" TEXT,
-    "phone_number" TEXT,
+    "image" TEXT NOT NULL,
+    "phone_number" TEXT NOT NULL,
     "socketId" TEXT,
-    "active" BOOLEAN NOT NULL DEFAULT false
+    "active" BOOLEAN NOT NULL DEFAULT false,
+    "admin" BOOLEAN NOT NULL DEFAULT false
 );
 
 -- CreateTable
@@ -24,6 +25,43 @@ CREATE TABLE "Message" (
 -- CreateTable
 CREATE TABLE "Conversation" (
     "id" TEXT NOT NULL PRIMARY KEY
+);
+
+-- CreateTable
+CREATE TABLE "Purchase" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "conversation_id" TEXT NOT NULL,
+    "vin" TEXT,
+    "color" TEXT,
+    "email" TEXT,
+    "state" TEXT,
+    "name" TEXT,
+    "lastName" TEXT,
+    "address" TEXT,
+    "city" TEXT,
+    "houseType" TEXT,
+    "zip" TEXT,
+    "phone" TEXT,
+    "driverLicense" TEXT,
+    "hasVehicleInSurance" TEXT,
+    "wantToGetVehicleInsurance" TEXT,
+    "vehicleInsurance" TEXT,
+    "details" TEXT,
+    "isTruck" TEXT,
+    "total" INTEGER DEFAULT 0,
+    "continuePurchase" BOOLEAN,
+    "completed" BOOLEAN DEFAULT false,
+    "user_id" TEXT NOT NULL,
+    "options" TEXT,
+    "cancelled" BOOLEAN DEFAULT false,
+    "failedTries" INTEGER DEFAULT 0,
+    "image" TEXT,
+    "vehicleType" TEXT,
+    "buyingType" TEXT,
+    "paypalPaymentId" TEXT,
+    "insuranceType" TEXT,
+    CONSTRAINT "Purchase_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "Conversation" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Purchase_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable

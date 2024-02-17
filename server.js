@@ -253,6 +253,7 @@ io.on('connection', (socket) => {
             image: true,
             vehicleType: true,
             buyingType: true,
+            insuranceType: true,
             user: {
               select: {
                 id: true,
@@ -265,7 +266,7 @@ io.on('connection', (socket) => {
     })
 
     if (!conversationPurchases.purchases.length) {
-      conversationPurchases = await prisma.purchase.create({
+      await prisma.purchase.create({
         data: {
           vin: '',
           color: '',
@@ -300,8 +301,55 @@ io.on('connection', (socket) => {
           vehicleType: '',
           buyingType: '',
           paypalPaymentId: '',
+          insuranceType: '',
         },
+      })
 
+      conversationPurchases = await prisma.conversation.findUnique({
+        where: {
+          id: conversation_id
+        },
+        include: {
+          purchases: {
+            select: {
+              id: true,
+              color: true,
+              vin: true,
+              continuePurchase: true,
+              details: true,
+              email: true,
+              state: true,
+              completed: true,
+              cancelled: true,
+              options: true,
+              name: true,
+              lastName: true,
+              address: true,
+              city: true,
+              houseType: true,
+              zip: true,
+              phone: true,
+              driverLicense: true,
+              hasVehicleInSurance: true,
+              vehicleInsurance: true,
+              failedTries: true,
+              isTruck: true,
+              wantToGetVehicleInsurance: true,
+              conversation_id: true,
+              total: true,
+              image: true,
+              vehicleType: true,
+              buyingType: true,
+              insuranceType: true,
+              user: {
+                select: {
+                  id: true,
+                  admin: true,
+                }
+              },
+            }
+          }
+        }
       })
     }
 
@@ -311,7 +359,7 @@ io.on('connection', (socket) => {
       const findByConversationID = findPurchasesUnCompleted.find(purchase => purchase.conversation_id === conversation_id)
 
       if (!findByConversationID.completed && !findByConversationID.cancelled) {
-        if (!findByConversationID.buyingType.length) {
+        if (!findByConversationID.buyingType?.length) {
           if (Number(content) === 1) {
             await prisma.purchase.update({
               where: {
@@ -465,7 +513,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (findByConversationID.buyingType.includes('temporary') && !findByConversationID.state.length) {
+        } else if (!findByConversationID.state?.length) {
 
   const allStates = [
     'Alabama',        'Arizona',        'Arkansas',
@@ -535,7 +583,7 @@ io.on('connection', (socket) => {
       })
     }
   }
-        } else if (findByConversationID.buyingType.includes('temporary') &&!findByConversationID.details.length) {
+        } else if (!findByConversationID.details?.length) {
           const splittedOptions = findByConversationID.options.split('\n')
 
           if (Number(content) && Number(content) <= splittedOptions.length) {
@@ -1294,7 +1342,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.houseType.length) {
+        } else if (!findByConversationID.houseType?.length) {
           const houseTypes = ['house', 'apartment', 'condo', 'townhouse', 'other']
 
           if ((Number(content) && houseTypes[Number(content) - 1]) || houseTypes.includes(content.toLowerCase())) {
@@ -1415,7 +1463,7 @@ io.on('connection', (socket) => {
             })
           }
 
-        } else if (!findByConversationID.zip.length) {
+        } else if (!findByConversationID.zip?.length) {
           if (regexForZip.test(content)) {
             await prisma.purchase.update({
               where: {
@@ -1533,7 +1581,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.phone.length) {
+        } else if (!findByConversationID.phone?.length) {
           if (regexForNumber.test(content)) {
             await prisma.purchase.update({
               where: {
@@ -1651,7 +1699,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.vin.length) {
+        } else if (!findByConversationID.vin?.length) {
           if (regexForVIN.test(content)) {
             await prisma.purchase.update({
               where: {
@@ -1769,7 +1817,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.color.length) {
+        } else if (!findByConversationID.color?.length) {
           const colors = ['black', 'white', 'gray', 'blue', 'silver', 'red', 'green', 'gold', 'brown', 'orange', 'beige', 'purple', 'yellow', 'other']
 
           if ((Number(content) && colors[Number(content) - 1]) || colors.includes(content.toLowerCase())) {
@@ -2049,7 +2097,7 @@ io.on('connection', (socket) => {
             } else if (findByConversationID.buyingType.includes('insurance')) {
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Please type 'yes' if you want to continue with the purchase or 'no' if you want to cancel it.`,
+                  content: `We are going to contact you soon to get your insurance details.\n\nPlease select the insurance provider you want to use:\n\n1) Geico\n2) Progressive\n3) State Farm\n4) Allstate`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/continue"
@@ -2061,6 +2109,15 @@ io.on('connection', (socket) => {
                       username: true,
                     }
                   }
+                }
+              })
+
+              prisma.purchase.update({
+                where: {
+                  id: findByConversationID.id
+                },
+                data: {
+                  wantToGetVehicleInsurance: 'yes'
                 }
               })
 
@@ -2431,20 +2488,20 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (findByConversationID.buyingType.includes('temporary') &&!findByConversationID.wantToGetVehicleInsurance.length) {
+        } else if (findByConversationID.buyingType.includes('temporary') && !findByConversationID.wantToGetVehicleInsurance.length) {
           if (content.toLowerCase() === 'yes') {
             await prisma.purchase.update({
               where: {
                 id: findByConversationID.id
               },
               data: {
-                wantToGetVehicleInsurance: 'yes'
+                wantToGetVehicleInsurance: 'yes',
               }
             })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `We are going to contact you soon to get your insurance details.\n\nPlease type 'yes' if you want to continue with the purchase or 'no' if you want to cancel it.`,
+                content: `We are going to contact you soon to get your insurance details.\n\nPlease select the insurance provider you want to use:\n\n1) Geico\n2) Progressive\n3) State Farm\n4) Allstate`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/insuranceDetails"
@@ -2588,6 +2645,250 @@ io.on('connection', (socket) => {
           }
   
           return;
+        } else if (!findByConversationID.insuranceType?.length && findByConversationID.wantToGetVehicleInsurance && findByConversationID.wantToGetVehicleInsurance === 'yes' && findByConversationID.buyingType.includes('temporary')) {
+          if (Number(content) && Number(content) <= 4) {
+            const insuranceProviders = ['Geico', 'Progressive', 'State Farm', 'Allstate']
+
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                insuranceType: insuranceProviders[Number(content) - 1]
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: `Please type 'yes' if you want to continue with the purchase or 'no' if you want to cancel it.`,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/plates/confirm"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+          } else {
+            if (findByConversationID.failedTries >= 3) {
+              await prisma.purchase.update({
+                where: {
+                  id: findByConversationID.id
+                },
+                data: {
+                  cancelled: true,
+                  completed: true
+                }
+              })
+
+              const newMessage = await prisma.message.create({
+                data: {
+                  content: `Your request has been cancelled.`,
+                  sender_id: noSender[0].id,
+                  conversation_id,
+                  content_type: "text/auto/plates/success/cancelled"
+                },
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                    }
+                  }
+                }
+              })
+
+              io.to(conversation_id).emit('message', {
+                data: newMessage,
+              })
+
+              io.emit(`notification-${noSender[0].id}`, {
+                title: 'New message',
+                body: `
+                    ${sender[0].username} has sent a new message
+                    `
+              })
+
+              return;
+            }
+
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                failedTries: findByConversationID.failedTries + 1
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/plates/insuranceDetails"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+
+            return;
+          }
+        } else if (findByConversationID.buyingType.includes('insurance') && !findByConversationID.insuranceType?.length) {
+          if (Number(content) && Number(content) <= 4) {
+            const insuranceProviders = ['Geico', 'Progressive', 'State Farm', 'Allstate']
+
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                insuranceType: insuranceProviders[Number(content) - 1]
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: `Please type 'yes' if you want to continue with the purchase or 'no' if you want to cancel it.`,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/plates/confirm"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+          } else {
+            if (findByConversationID.failedTries >= 3) {
+              await prisma.purchase.update({
+                where: {
+                  id: findByConversationID.id
+                },
+                data: {
+                  cancelled: true,
+                  completed: true
+                }
+              })
+
+              const newMessage = await prisma.message.create({
+                data: {
+                  content: `Your request has been cancelled.`,
+                  sender_id: noSender[0].id,
+                  conversation_id,
+                  content_type: "text/auto/plates/success/cancelled"
+                },
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                    }
+                  }
+                }
+              })
+
+              io.to(conversation_id).emit('message', {
+                data: newMessage,
+              })
+
+              io.emit(`notification-${noSender[0].id}`, {
+                title: 'New message',
+                body: `
+                    ${sender[0].username} has sent a new message
+                    `
+              })
+
+              return;
+            }
+
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                failedTries: findByConversationID.failedTries + 1
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/plates/insuranceDetails"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+
+            return;
+          }
         } else if (content.toLowerCase() === 'yes') {
           await prisma.purchase.update({
             where: {
@@ -2890,6 +3191,7 @@ io.on('connection', (socket) => {
             vehicleType: '',
             buyingType: 'temporary',
             paypalPaymentId: '',
+            insuranceType: '',
           }
         })
       }
@@ -2982,6 +3284,7 @@ io.on('connection', (socket) => {
             vehicleType: '',
             buyingType: 'insurance',
             paypalPaymentId: '',
+            insuranceType: '',
           }
         })
       }
@@ -3410,7 +3713,13 @@ app.post("/createPurchase", async (req, res) => {
     lastName,
     name,
     isTruck,
-    total
+    total,
+    vehicleType,
+    details,
+    options,
+    address,
+    vehicleInsurance,
+    driverLicense
   } = req.body
 
   try {
@@ -3433,15 +3742,20 @@ app.post("/createPurchase", async (req, res) => {
         total,
         id: uuidv4(),
         completed: false,
-        options: '',
-        address: '',
-        driverLicense: '',
-        vehicleInsurance: '',
+        options,
+        address,
+        driverLicense,
+        vehicleInsurance,
         failedTries: 0,
         cancelled: false,
-        hasVehicleInSurance: '',
-        wantToGetVehicleInsurance: '',
+        hasVehicleInSurance: vehicleInsurance === 'yes' ? 'yes' : 'no',
+        wantToGetVehicleInsurance: vehicleInsurance === 'yes' ? 'yes' : 'no',
         paypalPaymentId: '',
+        buyingType: 'temporary',
+        continuePurchase: false,
+        details,
+        vehicleType,
+        insuranceType: '',
       }
     })
 

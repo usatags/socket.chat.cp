@@ -76,4 +76,5 @@ model Purchase {
   vehicleType String?
   buyingType String?
   paypalPaymentId String?
+  insuranceType String?
 }
