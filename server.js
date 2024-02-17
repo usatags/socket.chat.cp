@@ -216,7 +216,9 @@ io.on('connection', (socket) => {
       data: newMessage,
     })
 
-    const conversationPurchases = await prisma.conversation.findUnique({
+    let conversationPurchases;
+    
+    conversationPurchases = await prisma.conversation.findUnique({
       where: {
         id: conversation_id
       },
@@ -249,6 +251,8 @@ io.on('connection', (socket) => {
             conversation_id: true,
             total: true,
             image: true,
+            vehicleType: true,
+            buyingType: true,
             user: {
               select: {
                 id: true,
@@ -260,13 +264,278 @@ io.on('connection', (socket) => {
       }
     })
 
-    const findPurchasesUnCompleted = conversationPurchases.purchases.filter(purchase => !purchase.completed)
+    if (!conversationPurchases.purchases.length) {
+      conversationPurchases = await prisma.purchase.create({
+        data: {
+          vin: '',
+          color: '',
+          email: '',
+          details: '',
+          continuePurchase: true,
+          // state: state.state,
+          state: '',
+          conversation_id,
+          user_id: sender[0].id,
+          completed: false,
+          id: uuidv4(),
+          // options: state.plates,
+          options: '',
+          address: '',
+          city: '',
+          zip: '',
+          phone: '',
+          driverLicense: '',
+          vehicleInsurance: '',
+          failedTries: 0,
+          cancelled: false,
+          houseType: '',
+          lastName: '',
+          name: '',
+          hasVehicleInSurance: '',
+          wantToGetVehicleInsurance: '',
+          isTruck: '',
+          total: 0,
+          // image: `${state.id}-${state.state}.webp`,
+          image: '',
+          vehicleType: '',
+          buyingType: '',
+          paypalPaymentId: '',
+        },
+
+      })
+    }
+
+    const findPurchasesUnCompleted = conversationPurchases.purchases ? conversationPurchases.purchases.filter(purchase => !purchase.completed && !purchase.cancelled) : []
 
     if (findPurchasesUnCompleted.length && !sender[0].admin) {
       const findByConversationID = findPurchasesUnCompleted.find(purchase => purchase.conversation_id === conversation_id)
 
       if (!findByConversationID.completed && !findByConversationID.cancelled) {
-        if (!findByConversationID.details.length) {
+        if (!findByConversationID.buyingType.length) {
+          if (Number(content) === 1) {
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                buyingType: 'temporary'
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: jsonData.plates,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/plates"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+
+          } else if (Number(content) === 2) {
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                buyingType: 'insurance'
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: jsonData.plates,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/insurance"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+          } else {
+            if (findByConversationID.failedTries >= 3) {
+              await prisma.purchase.update({
+                where: {
+                  id: findByConversationID.id
+                },
+                data: {
+                  cancelled: true,
+                  completed: true
+                }
+              })
+
+              const newMessage = await prisma.message.create({
+                data: {
+                  content: `Your request has been cancelled.`,
+                  sender_id: noSender[0].id,
+                  conversation_id,
+                  content_type: "text/auto/plates/success/cancelled"
+                },
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                    }
+                  }
+                }
+              })
+
+              io.to(conversation_id).emit('message', {
+                data: newMessage,
+              })
+
+              io.emit(`notification-${noSender[0].id}`, {
+                title: 'New message',
+                body: `
+                    ${sender[0].username} has sent a new message
+                    `
+              })
+
+              return;
+            }
+
+            await prisma.purchase.update({
+              where: {
+                id: findByConversationID.id
+              },
+              data: {
+                failedTries: findByConversationID.failedTries + 1
+              }
+            })
+
+            const newMessage = await prisma.message.create({
+              data: {
+                content: `Invalid option. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                sender_id: noSender[0].id,
+                conversation_id,
+                content_type: "text/auto/plates"
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                  }
+                }
+              }
+            })
+
+            io.to(conversation_id).emit('message', {
+              data: newMessage,
+            })
+
+            io.emit(`notification-${noSender[0].id}`, {
+              title: 'New message',
+              body: `
+                  ${sender[0].username} has sent a new message
+                  `
+            })
+          }
+        } else if (findByConversationID.buyingType.includes('temporary') && !findByConversationID.state.length) {
+
+  const allStates = [
+    'Alabama',        'Arizona',        'Arkansas',
+    'California',     'Colorado',       'Connecticut',
+    'Delaware',       'Florida',        'Georgia',
+    'Illinois',       'Indiana',        'Iowa',
+    'Kansas',         'Kentucky',       'Louisiana',
+    'Maryland',       'Massachusetts',  'Michigan',
+    'Minnesota',      'Missouri',       'Montana',
+    'Nevada',         'New Jersey',     'New Mexico',
+    'North Carolina', 'North Dakota',   'Ohio',
+    'Oklahoma',       'Oregon',         'Pennsylvania',
+    'Rhode Island',   'South Carolina', 'Tennessee',
+    'Texas',          'Utah',           'Vermont',
+    'Virginia',       'Washington',     'West Virginia',
+    'Wisconsin',      'Wyoming'
+  ]
+
+  if ((Number(content) && allStates[Number(content) - 1]) || allStates.includes(content.toLowerCase())) {
+    const state = allStates[Number(content) - 1] || content
+
+    if (!sender[0].admin) {
+      const purchaseExists = findPurchasesUnCompleted.find(purchase => conversation_id === purchase.conversation_id && !purchase.completed && !purchase.cancelled)
+      const statesData = Number(content) ? jsonData.states.find(state => state.state === allStates[Number(content) - 1]) : jsonData.states.find(state => state.state === content)
+      const options = statesData.plates.split('\n').map((option, index) => `${option}`).join('\n')
+
+      if (purchaseExists) {
+        console.log('Purchase exists')
+        await prisma.purchase.update({
+          where: {
+            id: findByConversationID.id
+          },
+          data: {
+            state,
+            options: statesData.plates,
+            image: `${statesData.id}-${state}.webp`,
+          }
+        })
+      }
+
+      const autoMessage = await prisma.message.create({
+        data: {
+          content: 'For the state of ' + state + ':\n\n' + options,
+          sender_id: noSender[0].id,
+          conversation_id,
+          content_type: "text/auto/plates"
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+            }
+          }
+        }
+      })
+
+      io.to(conversation_id).emit('message', {
+        data: autoMessage,
+      })
+
+      io.emit(`notification-${noSender[0].id}`, {
+        title: 'New message',
+        body: `
+            ${sender[0].username} has sent a new message
+            `
+      })
+    }
+  }
+        } else if (findByConversationID.buyingType.includes('temporary') &&!findByConversationID.details.length) {
           const splittedOptions = findByConversationID.options.split('\n')
 
           if (Number(content) && Number(content) <= splittedOptions.length) {
@@ -285,7 +554,7 @@ io.on('connection', (socket) => {
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Please type 'yes if your vehicle is a truck or 'no' if it's not.\nREMEMBER: The truck has a fee of $20`,
+                content: `Enter your vehicle type to continue:\n\n1) Car\n2) Truck(+20$)\n3) Van\n4) Motorcycle\n5) Bus(+20$)\n6) SUV (Sport Utility Vehicle)\n7) Tractor\n8) Trailer(+20$)\n9) RV (Recreational Vehicle)`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/vin"
@@ -390,16 +659,18 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.isTruck.length) {
-          if (content === 'yes') {
+        } else if (!findByConversationID.vehicleType.length) {
+          if (content.includes('2') || content.toLowerCase().includes('truck') || content.toLowerCase().includes('8') || content.toLowerCase().includes('trailer') || content.toLowerCase().includes('bus') || content.toLowerCase().includes('5')) {
+            const vehicleTypes = ['truck', 'bus', 'trailer']
             await prisma.purchase.update({
               where: {
                 id: findByConversationID.id
               },
               data: {
                 isTruck: 'true',
-                details: findByConversationID.details + ' + 20$ for truck fee.',
-                total: findByConversationID.total + 20
+                details: findByConversationID.details,
+                total: findByConversationID.total + 20,
+                vehicleType: Number(content) ? vehicleTypes[Number(content) - 1] : content
               }
             })
 
@@ -430,13 +701,17 @@ io.on('connection', (socket) => {
                   ${sender[0].username} has sent a new message
                   `
             })
-          } else if (content === 'no') {
+          } else if (content.includes('1') || content.toLowerCase().includes('car') || content.includes('3') || content.toLowerCase().includes('van') || content.includes('4') || content.toLowerCase().includes('motorcycle') || content.includes('6') || content.toLowerCase().includes('suv') || content.includes('7') || content.toLowerCase().includes('tractor') || content.toLowerCase().includes('rv') || content.toLowerCase().includes('9')) {
+            const vehicleTypes = ['car', 'van', 'motorcycle', 'suv', 'tractor', 'rv']
             await prisma.purchase.update({
               where: {
                 id: findByConversationID.id
               },
               data: {
-                isTruck: 'false'
+                isTruck: 'false',
+                details: findByConversationID.details,
+                total: findByConversationID.total,
+                vehicleType: Number(content) ? vehicleTypes[Number(content) - 1] : content
               }
             })
 
@@ -1743,33 +2018,65 @@ io.on('connection', (socket) => {
               }
             })
 
-            const newMessage = await prisma.message.create({
-              data: {
-                content: `Please type 'yes' if you have an insurance for your vehicle or 'no' if you don't have one.`,
-                sender_id: noSender[0].id,
-                conversation_id,
-                content_type: "text/auto/plates/insurance"
-              },
-              include: {
-                sender: {
-                  select: {
-                    id: true,
-                    username: true,
+            if (findByConversationID.buyingType.includes('temporary')) {
+              const newMessage = await prisma.message.create({
+                data: {
+                  content: `Please type 'yes' if you have an insurance for your vehicle or 'no' if you don't have one.`,
+                  sender_id: noSender[0].id,
+                  conversation_id,
+                  content_type: "text/auto/plates/insurance"
+                },
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                    }
                   }
                 }
-              }
-            })
-  
-            io.to(conversation_id).emit('message', {
-              data: newMessage,
-            })
-  
-            io.emit(`notification-${noSender[0].id}`, {
-              title: 'New message',
-              body: `
-                  ${sender[0].username} has sent a new message
-                  `
-            })
+              })
+    
+              io.to(conversation_id).emit('message', {
+                data: newMessage,
+              })
+    
+              io.emit(`notification-${noSender[0].id}`, {
+                title: 'New message',
+                body: `
+                    ${sender[0].username} has sent a new message
+                    `
+              })
+            } else if (findByConversationID.buyingType.includes('insurance')) {
+              const newMessage = await prisma.message.create({
+                data: {
+                  content: `Please type 'yes' if you want to continue with the purchase or 'no' if you want to cancel it.`,
+                  sender_id: noSender[0].id,
+                  conversation_id,
+                  content_type: "text/auto/plates/continue"
+                },
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                    }
+                  }
+                }
+              })
+
+              io.to(conversation_id).emit('message', {
+                data: newMessage,
+              })
+
+              io.emit(`notification-${noSender[0].id}`, {
+                title: 'New message',
+                body: `
+                    ${sender[0].username} has sent a new message
+                    `
+              })
+
+            }
+            return 
           } else {
             if (findByConversationID.failedTries >= 3) {
               await prisma.purchase.update({
@@ -1850,7 +2157,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.hasVehicleInSurance.length) {
+        } else if (findByConversationID.buyingType.includes('temporary') &&!findByConversationID.hasVehicleInSurance.length) {
           if (content.toLowerCase() === 'yes') {
             await prisma.purchase.update({
               where: {
@@ -2006,7 +2313,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.vehicleInsurance.length &&  findByConversationID.hasVehicleInSurance === 'yes' && findByConversationID.wantToGetVehicleInsurance === 'no') {
+        } else if (findByConversationID.buyingType.includes('temporary') && !findByConversationID.vehicleInsurance.length &&  findByConversationID.hasVehicleInSurance === 'yes' && findByConversationID.wantToGetVehicleInsurance === 'no') {
           if ((content_type.includes('image') || content_type.includes('pdf')) && regexForDriverLicense.test(content)) {
             await prisma.purchase.update({
               where: {
@@ -2124,7 +2431,7 @@ io.on('connection', (socket) => {
                   `
             })
           }
-        } else if (!findByConversationID.wantToGetVehicleInsurance.length) {
+        } else if (findByConversationID.buyingType.includes('temporary') &&!findByConversationID.wantToGetVehicleInsurance.length) {
           if (content.toLowerCase() === 'yes') {
             await prisma.purchase.update({
               where: {
@@ -2363,154 +2670,344 @@ io.on('connection', (socket) => {
       }
     }
   
-    let found = false;
+  //   let found = false;
   
-    jsonData.states.forEach(async (state) => {
-      if (!Number.isInteger(Number(content)) || Number(content) < 0) return;
-      if (state.id.toLowerCase() === content.toLowerCase()) {
-          found = true;
+  //   jsonData.states.forEach(async (state) => {
+  //     if (!Number.isInteger(Number(content)) || Number(content) < 0) return;
+  //     if (state.id.toLowerCase() === content.toLowerCase()) {
+  //         found = true;
   
-          if (!sender[0].admin) {
+  //         if (!sender[0].admin) {
 
-              // const lastAutoMessage = lastAutoMessages.find((message) => message.conversation_id === conversation_id)
+  //             // const lastAutoMessage = lastAutoMessages.find((message) => message.conversation_id === conversation_id)
 
-              // if (lastAutoMessage) {
-              //   lastAutoMessage.formData.state = state.state
-              // } else {
-              //   lastAutoMessages.push({
-              //     conversation_id,
-              //     lastMessage: '',
-              //     formData: {
-              //       vin: '',
-              //       color: '',
-              //       email: '',
-              //       state: state.state,
-              //       plateDetails: ''
-              //     }
-              //   })
-              // }
+  //             // if (lastAutoMessage) {
+  //             //   lastAutoMessage.formData.state = state.state
+  //             // } else {
+  //             //   lastAutoMessages.push({
+  //             //     conversation_id,
+  //             //     lastMessage: '',
+  //             //     formData: {
+  //             //       vin: '',
+  //             //       color: '',
+  //             //       email: '',
+  //             //       state: state.state,
+  //             //       plateDetails: ''
+  //             //     }
+  //             //   })
+  //             // }
 
-              const purchaseExists = findPurchasesUnCompleted.find(purchase => purchase.state === state.state && conversation_id === purchase.conversation_id && !purchase.completed && !purchase.cancelled)
+  //             const purchaseExists = findPurchasesUnCompleted.find(purchase => purchase.state === state.state && conversation_id === purchase.conversation_id && !purchase.completed && !purchase.cancelled)
 
-              // console.log('Purchase exists', purchaseExists)
+  //             // console.log('Purchase exists', purchaseExists)
 
-              if (purchaseExists) {
-                const newMessage = await prisma.message.create({
-                  data: {
-                    content: `You have already a purchase in progress for the state of ${state.state}. Please complete it or cancel it.`,
-                    sender_id: noSender[0].id,
-                    conversation_id,
-                    content_type: "text/auto/plates/purchaseExists/continue"
-                  },
-                  include: {
-                    sender: {
-                      select: {
-                        id: true,
-                        username: true,
-                      }
-                    }
-                  }
-                })
+  //             if (purchaseExists) {
+  //               const newMessage = await prisma.message.create({
+  //                 data: {
+  //                   content: `You have already a purchase in progress for the state of ${state.state}. Please complete it or cancel it.`,
+  //                   sender_id: noSender[0].id,
+  //                   conversation_id,
+  //                   content_type: "text/auto/plates/purchaseExists/continue"
+  //                 },
+  //                 include: {
+  //                   sender: {
+  //                     select: {
+  //                       id: true,
+  //                       username: true,
+  //                     }
+  //                   }
+  //                 }
+  //               })
 
-                io.to(conversation_id).emit('message', {
-                  data: newMessage,
-                })
+  //               io.to(conversation_id).emit('message', {
+  //                 data: newMessage,
+  //               })
 
-                io.emit(`notification-${noSender[0].id}`, {
-                  title: 'New message',
-                  body: `
-                      ${sender[0].username} has sent a new message
-                      `
-                })
+  //               io.emit(`notification-${noSender[0].id}`, {
+  //                 title: 'New message',
+  //                 body: `
+  //                     ${sender[0].username} has sent a new message
+  //                     `
+  //               })
 
-                return;
+  //               return;
 
-              } else {
-                await prisma.purchase.create({
-                  data: {
-                    vin: '',
-                    color: '',
-                    email: '',
-                    details: '',
-                    continuePurchase: true,
-                    state: state.state,
-                    conversation_id,
-                    user_id: sender[0].id,
-                    completed: false,
-                    id: uuidv4(),
-                    options: state.plates,
-                    address: '',
-                    city: '',
-                    zip: '',
-                    phone: '',
-                    driverLicense: '',
-                    vehicleInsurance: '',
-                    failedTries: 0,
-                    cancelled: false,
-                    houseType: '',
-                    lastName: '',
-                    name: '',
-                    hasVehicleInSurance: '',
-                    wantToGetVehicleInsurance: '',
-                    isTruck: '',
-                    total: 0,
-                    image: `${state.id}-${state.state}.webp`
-                  }
-                })
-              }
+  //             } else {
+  //               await prisma.purchase.create({
+  //                 data: {
+  //                   vin: '',
+  //                   color: '',
+  //                   email: '',
+  //                   details: '',
+  //                   continuePurchase: true,
+  //                   state: state.state,
+  //                   conversation_id,
+  //                   user_id: sender[0].id,
+  //                   completed: false,
+  //                   id: uuidv4(),
+  //                   options: state.plates,
+  //                   address: '',
+  //                   city: '',
+  //                   zip: '',
+  //                   phone: '',
+  //                   driverLicense: '',
+  //                   vehicleInsurance: '',
+  //                   failedTries: 0,
+  //                   cancelled: false,
+  //                   houseType: '',
+  //                   lastName: '',
+  //                   name: '',
+  //                   hasVehicleInSurance: '',
+  //                   wantToGetVehicleInsurance: '',
+  //                   isTruck: '',
+  //                   total: 0,
+  //                   image: `${state.id}-${state.state}.webp`,
+  //                   vehicleType: '',
+  //                   buyingType: '',
+  //                 }
+  //               })
+  //             }
 
-              const autoMessage = await prisma.message.create({
-                data: {
-                    content: 'For the state of ' + state.state + ':\n\n' + state.plates,
-                    sender_id: noSender[0].id,
-                    conversation_id,
-                    content_type: "text/auto/plates"
-                },
-                include: {
-                    sender: {
-                        select: {
-                            id: true,
-                            username: true,
-                        }
-                    }
-                }
-            })
+  //             const autoMessage = await prisma.message.create({
+  //               data: {
+  //                   content: 'For the state of ' + state.state + ':\n\n' + state.plates,
+  //                   sender_id: noSender[0].id,
+  //                   conversation_id,
+  //                   content_type: "text/auto/plates"
+  //               },
+  //               include: {
+  //                   sender: {
+  //                       select: {
+  //                           id: true,
+  //                           username: true,
+  //                       }
+  //                   }
+  //               }
+  //           })
   
-              io.to(conversation_id).emit('message', {
-                  data: autoMessage,
-              })
+  //             io.to(conversation_id).emit('message', {
+  //                 data: autoMessage,
+  //             })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                  title: 'New message',
-                  body: `
-                      ${sender[0].username} has sent a new message
-                      `
-              })
-          }
-      }
-  })
+  //             io.emit(`notification-${noSender[0].id}`, {
+  //                 title: 'New message',
+  //                 body: `
+  //                     ${sender[0].username} has sent a new message
+  //                     `
+  //             })
+  //         }
+  //     }
+  // })
   
-  if (!sender[0].admin && !found && Number.isInteger(Number(content))) {
-      const autoMessage = await prisma.message.create({
+  // if (!sender[0].admin && !found && Number.isInteger(Number(content))) {
+  //     const autoMessage = await prisma.message.create({
+  //         data: {
+  //             content: `${content} is not an available state. Please try again.`,
+  //             sender_id: noSender[0].id,
+  //             conversation_id,
+  //             content_type: "text/auto/invalid"
+  //         },
+  //         include: {
+  //             sender: {
+  //                 select: {
+  //                     id: true,
+  //                     username: true,
+  //                 }
+  //             }
+  //         }
+  //     })
+  //     io.to(conversation_id).emit('message', {
+  //         data: autoMessage,
+  //     })
+  // }
+
+    
+  if (!sender[0].admin && Number.isInteger(Number(content))) {
+    if (Number(content) === 1) {
+      //create the purchase for the temporary plates
+      const purchaseExists = findPurchasesUnCompleted.find(purchase => purchase.conversation_id === conversation_id && !purchase.completed && !purchase.cancelled)
+
+      if (purchaseExists) {
+        const newMessage = await prisma.message.create({
           data: {
-              content: `${content} is not an available state. Please try again.`,
-              sender_id: noSender[0].id,
-              conversation_id,
-              content_type: "text/auto/invalid"
+            content: `You have already a purchase in progress. Please complete it or cancel it.`,
+            sender_id: noSender[0].id,
+            conversation_id,
+            content_type: "text/auto/plates/purchaseExists/continue"
           },
           include: {
-              sender: {
-                  select: {
-                      id: true,
-                      username: true,
-                  }
+            sender: {
+              select: {
+                id: true,
+                username: true,
               }
+            }
           }
+        })
+
+        io.to(conversation_id).emit('message', {
+          data: newMessage,
+        })
+
+        io.emit(`notification-${noSender[0].id}`, {
+          title: 'New message',
+          body: `
+              ${sender[0].username} has sent a new message
+              `
+        })
+
+        return;
+      } else {
+        await prisma.purchase.create({
+          data: {
+            vin: '',
+            color: '',
+            email: '',
+            details: '',
+            continuePurchase: true,
+            state: '',
+            conversation_id,
+            user_id: sender[0].id,
+            completed: false,
+            id: uuidv4(),
+            options: '',
+            address: '',
+            city: '',
+            zip: '',
+            phone: '',
+            driverLicense: '',
+            vehicleInsurance: '',
+            failedTries: 0,
+            cancelled: false,
+            houseType: '',
+            lastName: '',
+            name: '',
+            hasVehicleInSurance: '',
+            wantToGetVehicleInsurance: '',
+            isTruck: '',
+            total: 0,
+            image: '',
+            vehicleType: '',
+            buyingType: 'temporary',
+            paypalPaymentId: '',
+          }
+        })
+      }
+
+      const autoMessage = await prisma.message.create({
+        data: {
+          content: jsonData.plates,
+          sender_id: noSender[0].id,
+          conversation_id,
+          content_type: "text/auto/plates"
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+            }
+          }
+        }
       })
+
       io.to(conversation_id).emit('message', {
-          data: autoMessage,
+        data: autoMessage,
       })
-  }
+
+    } else if (Number(content) === 2) {
+      //create the purchase for the insurance
+      const purchaseExists = findPurchasesUnCompleted.find(purchase => purchase.conversation_id === conversation_id && !purchase.completed && !purchase.cancelled)
+
+      if (purchaseExists) {
+        const newMessage = await prisma.message.create({
+          data: {
+            content: `You have already a purchase in progress. Please complete it or cancel it.`,
+            sender_id: noSender[0].id,
+            conversation_id,
+            content_type: "text/auto/plates/purchaseExists/continue"
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true,
+              }
+            }
+          }
+        })
+
+        io.to(conversation_id).emit('message', {
+          data: newMessage,
+        })
+
+        io.emit(`notification-${noSender[0].id}`, {
+          title: 'New message',
+          body: `
+              ${sender[0].username} has sent a new message
+              `
+        })
+
+        return;
+      } else {
+        await prisma.purchase.create({
+          data: {
+            vin: '',
+            color: '',
+            email: '',
+            details: '',
+            continuePurchase: true,
+            state: '',
+            conversation_id,
+            user_id: sender[0].id,
+            completed: false,
+            id: uuidv4(),
+            options: '',
+            address: '',
+            city: '',
+            zip: '',
+            phone: '',
+            driverLicense: '',
+            vehicleInsurance: '',
+            failedTries: 0,
+            cancelled: false,
+            houseType: '',
+            lastName: '',
+            name: '',
+            hasVehicleInSurance: '',
+            wantToGetVehicleInsurance: '',
+            isTruck: '',
+            total: 0,
+            image: '',
+            vehicleType: '',
+            buyingType: 'insurance',
+            paypalPaymentId: '',
+          }
+        })
+      }
+
+      const autoMessage = await prisma.message.create({
+        data: {
+          content: jsonData.plates,
+          sender_id: noSender[0].id,
+          conversation_id,
+          content_type: "text/auto/plates"
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+            }
+          }
+        }
+      })
+
+      io.to(conversation_id).emit('message', {
+        data: autoMessage,
+      })
+    }
+}
   
   io.emit(`notification-${noSender[0].id}`, {
       title: 'New message',
@@ -2944,6 +3441,7 @@ app.post("/createPurchase", async (req, res) => {
         cancelled: false,
         hasVehicleInSurance: '',
         wantToGetVehicleInsurance: '',
+        paypalPaymentId: '',
       }
     })
 
@@ -2958,10 +3456,9 @@ app.post("/createPurchase", async (req, res) => {
   }
 })
 
-// PayPal API
+
 const generateAccessToken = async () => {
   try {
-    console.log(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
     if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
       throw new Error("MISSING_API_CREDENTIALS");
     }
@@ -2983,6 +3480,10 @@ const generateAccessToken = async () => {
   }
 };
 
+/**
+ * Generate a client token for rendering the hosted card fields.
+ * @see https://developer.paypal.com/docs/checkout/advanced/integrate/#link-integratebackend
+ */
 const generateClientToken = async () => {
   const accessToken = await generateAccessToken();
   const url = `${base}/v1/identity/generate-token`;
@@ -2998,7 +3499,10 @@ const generateClientToken = async () => {
   return handleResponse(response);
 };
 
-
+/**
+ * Create an order to start the transaction.
+ * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
+ */
 const createOrder = async (cart) => {
   // use the cart information passed from the front-end to calculate the purchase unit details
   console.log(
@@ -3014,8 +3518,9 @@ const createOrder = async (cart) => {
       {
         amount: {
           currency_code: "USD",
-          value: "100.00",
+          value: cart[0].quantity,
         },
+        description: cart[0].description,
       },
     ],
   };
@@ -3037,6 +3542,10 @@ const createOrder = async (cart) => {
   return handleResponse(response);
 };
 
+/**
+ * Capture payment for the created order to complete the transaction.
+ * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
+ */
 const captureOrder = async (orderID) => {
   const accessToken = await generateAccessToken();
   const url = `${base}/v2/checkout/orders/${orderID}/capture`;
@@ -3070,16 +3579,129 @@ async function handleResponse(response) {
   }
 }
 
+// return client token for hosted-fields component
 app.post("/api/token", async (req, res) => {
   try {
     const { jsonResponse, httpStatusCode } = await generateClientToken();
-    console.log("Client Token:", jsonResponse, httpStatusCode);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to generate client token:", error);
     res.status(500).send({ error: "Failed to generate client token." });
   }
 });
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    // use the cart information passed from the front-end to calculate the order amount detals
+    const { cart } = req.body;
+    const { jsonResponse, httpStatusCode } = await createOrder(cart);
+    res.status(httpStatusCode).json(jsonResponse);
+  } catch (error) {
+    console.error("Failed to create order:", error);
+    res.status(500).json({ error: "Failed to create order." });
+  }
+});
+
+app.post("/api/orders/:orderID/capture", async (req, res) => {
+  try {
+    const { orderID } = req.params;
+    const { jsonResponse, httpStatusCode } = await captureOrder(orderID);
+    res.status(httpStatusCode).json(jsonResponse);
+  } catch (error) {
+    console.error("Failed to create order:", error);
+    res.status(500).json({ error: "Failed to capture order." });
+  }
+});
+
+//Boton del seguro click aquí e ir al chat
+
+
+app.post('/completePurchase', async (req, res) => {
+  try {
+    const { purchaseID } = req.body
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        id: purchaseID
+      },
+    })
+
+    if (!purchase) {
+      return res.status(404).json({ error: 'Purchase not found' })
+    }
+
+    await prisma.purchase.update({
+      where: {
+        id: purchaseID
+      },
+      data: {
+        completed: true
+      }
+    })
+
+    res.status(200).json({
+      data: purchase,
+      message: 'Purchase completed successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from completePurchase', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// app.get('/liststates', async (req, res) => {
+//   try {
+//     const states = jsonData.states
+//     let data = ''
+//     states.map((state) => {
+//       const { state: stateName, plates } = state
+//       data += `${stateName}\n\n${plates}\n\n`
+//     })
+
+//     return res.status(200).json({
+//       data: data,
+//       message: 'States fetched successfully',
+//       success: true
+//     })
+//   } catch (error) {
+//     console.log('Error from liststates', error)
+//     res.status(500).json({ error: 'Internal server error' })
+//   }
+// })
+
+app.post('/updatePurchase', async (req, res) => {
+  try {
+    const { purchaseID, paypalPaymentId } = req.body
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        id: purchaseID
+      },
+    })
+
+    if (!purchase) {
+      return res.status(404).json({ error: 'Purchase not found' })
+    }
+
+    await prisma.purchase.update({
+      where: {
+        id: purchaseID
+      },
+      data: {
+        paypalPaymentId,
+        completed: true,
+      }
+    })
+
+    res.status(200).json({
+      data: purchase,
+      message: 'Purchase updated successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from updatePurchase', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)

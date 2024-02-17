@@ -73,4 +73,7 @@ model Purchase {
   cancelled Boolean? @default(false)
   failedTries Int? @default(0)
   image String?
+  vehicleType String?
+  buyingType String?
+  paypalPaymentId String?
 }
