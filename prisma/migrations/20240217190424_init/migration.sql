@@ -30,7 +30,7 @@ CREATE TABLE "Conversation" (
 -- CreateTable
 CREATE TABLE "Purchase" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "conversation_id" TEXT NOT NULL,
+    "conversation_id" TEXT,
     "vin" TEXT,
     "color" TEXT,
     "email" TEXT,
@@ -60,7 +60,7 @@ CREATE TABLE "Purchase" (
     "buyingType" TEXT,
     "paypalPaymentId" TEXT,
     "insuranceType" TEXT,
-    CONSTRAINT "Purchase_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "Conversation" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Purchase_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "Conversation" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Purchase_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

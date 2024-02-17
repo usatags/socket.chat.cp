@@ -23,7 +23,8 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-const base = "https://api-m.sandbox.paypal.com";
+// const base = "https://api-m.sandbox.paypal.com";
+const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors())
@@ -3566,11 +3567,11 @@ app.get('/room/:roomID/messages', async (req, res) => {
 //         username: 'admin',
 //         active: true,
 //         id: uuidv4(),
-//         password: bcrypt.hashSync('admin1234', 10),
-//         email: 'admin@gmail.com',
-//         image: '',
-//         phone_number: '123456789',
-//         admin: true
+//         password: bcrypt.hashSync('Usatags30339532', 10),
+//         email: 'usatagsus@gmail.com',
+//         image: 'https://res.cloudinary.com/dcggafcnx/image/upload/v1706131978/s5qiskn6o4s0qewp3228.jpg',
+//         phone_number: '(956) 696-7960',
+//         admin: true,
 //       }
 //     })
 
@@ -3635,7 +3636,7 @@ app.get('/changeIDS', async (req, res) => {
 
 // app.get('/clearDatabase', async (req, res) => {
 //   try {
-//     await prisma.conversation.deleteMany()
+//     await prisma.message.deleteMany()
 
 //     res.status(200).json({
 //       message: 'Database cleared successfully',
@@ -3719,7 +3720,10 @@ app.post("/createPurchase", async (req, res) => {
     options,
     address,
     vehicleInsurance,
-    driverLicense
+    driverLicense,
+    insuranceType,
+    wantToGetVehicleInsurance,
+    hasVehicleInSurance
   } = req.body
 
   try {
@@ -3748,14 +3752,14 @@ app.post("/createPurchase", async (req, res) => {
         vehicleInsurance,
         failedTries: 0,
         cancelled: false,
-        hasVehicleInSurance: vehicleInsurance === 'yes' ? 'yes' : 'no',
-        wantToGetVehicleInsurance: vehicleInsurance === 'yes' ? 'yes' : 'no',
+        hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+        wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
         paypalPaymentId: '',
         buyingType: 'temporary',
         continuePurchase: false,
         details,
         vehicleType,
-        insuranceType: '',
+        insuranceType,
       }
     })
 
@@ -3771,6 +3775,129 @@ app.post("/createPurchase", async (req, res) => {
 })
 
 
+// app.post("/createPurchase", async (req, res) => {
+//   const {
+//     vin,
+//     color,
+//     email,
+//     state,
+//     city,
+//     houseType,
+//     zip,
+//     phone,
+//     conversation_id,
+//     user_id,
+//     image,
+//     lastName,
+//     name,
+//     isTruck,
+//     total,
+//     vehicleType,
+//     details,
+//     options,
+//     address,
+//     vehicleInsurance,
+//     driverLicense,
+//     insuranceType,
+//     wantToGetVehicleInsurance,
+//     hasVehicleInSurance
+//   } = req.body
+
+//   try {
+
+//     let conversationID;
+//     const findConversation = conversation_id ? await prisma.conversation.findUnique({
+//       where: {
+//         id: conversation_id
+//       }
+//     }) : null
+
+//     if (!findConversation) {
+//       const newConversation = await prisma.conversation.create({
+//         data: {
+//           id: conversation_id,
+//           members: {
+//             connect: [
+//               {
+//                 id: user_id
+//               },
+//               {
+//                 id: process.env.ADMIN_ID || 'a72a5180-5204-488a-a102-ed7e09937dee'
+//               }
+//             ]
+//           }
+//         }
+//       })
+
+//       const findAdmin = await prisma.user.findUnique({
+//         where: {
+//           id: process.env.ADMIN_ID || 'a72a5180-5204-488a-a102-ed7e09937dee'
+//         }
+//       })
+
+//       await prisma.message.create({
+//         data: {
+//           content: jsonData.salute,
+//           sender_id: findAdmin.id,
+//           conversation_id: conversation_id,
+//           content_type: "text",
+//         },
+//       })
+
+//       conversationID = newConversation.id
+//     } else {
+//       conversationID = conversation_id
+//     }
+
+
+//     const purchase = await prisma.purchase.create({
+//       data: {
+//         vin,
+//         color,
+//         email,
+//         state,
+//         city,
+//         houseType,
+//         zip,
+//         phone,
+//         conversation_id: conversationID,
+//         user_id,
+//         image,
+//         lastName,
+//         name,
+//         isTruck,
+//         total,
+//         id: uuidv4(),
+//         completed: false,
+//         options,
+//         address,
+//         driverLicense,
+//         vehicleInsurance,
+//         failedTries: 0,
+//         cancelled: false,
+//         hasVehicleInSurance: vehicleInsurance === 'yes' ? 'yes' : hasVehicleInSurance,
+//         wantToGetVehicleInsurance: vehicleInsurance === 'yes' ? 'yes' : wantToGetVehicleInsurance,
+//         paypalPaymentId: '',
+//         buyingType: 'temporary',
+//         continuePurchase: false,
+//         details,
+//         vehicleType,
+//         insuranceType,
+//       }
+//     })
+
+//     res.status(201).json({
+//       data: purchase,
+//       message: 'Purchase created successfully',
+//       success: true
+//     })
+//   } catch (error) {
+//     console.log('Error from createPurchase', error)
+//     res.status(500).json({ error: 'Internal server error' })
+//   }
+// })
+
+
 const generateAccessToken = async () => {
   try {
     if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
@@ -3779,6 +3906,7 @@ const generateAccessToken = async () => {
     const auth = Buffer.from(
       process.env.PAYPAL_CLIENT_ID + ":" + process.env.PAYPAL_CLIENT_SECRET,
     ).toString("base64");
+
     const response = await fetch(`${base}/v1/oauth2/token`, {
       method: "POST",
       body: "grant_type=client_credentials",
@@ -3786,6 +3914,7 @@ const generateAccessToken = async () => {
         Authorization: `Basic ${auth}`,
       },
     });
+
 
     const data = await response.json();
     return data.access_token;
@@ -3835,6 +3964,7 @@ const createOrder = async (cart) => {
           value: cart[0].quantity,
         },
         description: cart[0].description,
+        name: 'Order from Usatags',
       },
     ],
   };

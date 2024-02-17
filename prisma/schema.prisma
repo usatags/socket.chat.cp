@@ -45,8 +45,8 @@ model Conversation {
 
 model Purchase {
   id String @id @default(uuid())
-  conversation_id String
-  conversation Conversation @relation(fields: [conversation_id], references: [id])
+  conversation_id String?
+  conversation Conversation? @relation(fields: [conversation_id], references: [id])
   vin String?
   color String?
   email String?
