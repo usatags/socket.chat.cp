@@ -24,6 +24,7 @@ model User {
   messages Message[]
   conversations Conversation[]
   purchases Purchase[]
+  purchasesWithoutConversation PurchaseWithoutConversation[]
 }
 
 model Message {
@@ -47,6 +48,40 @@ model Purchase {
   id String @id @default(uuid())
   conversation_id String?
   conversation Conversation? @relation(fields: [conversation_id], references: [id])
+  vin String?
+  color String?
+  email String?
+  state String?
+  name String?
+  lastName String?
+  address String?
+  city String?
+  houseType String?
+  zip String?
+  phone String?
+  driverLicense String?
+  hasVehicleInSurance String?
+  wantToGetVehicleInsurance String?
+  vehicleInsurance String?
+  details String?
+  isTruck String?
+  total Int? @default(0)
+  continuePurchase Boolean?
+  completed Boolean? @default(false)
+  user User @relation(fields: [user_id], references: [id])
+  user_id String
+  options String?
+  cancelled Boolean? @default(false)
+  failedTries Int? @default(0)
+  image String?
+  vehicleType String?
+  buyingType String?
+  paypalPaymentId String?
+  insuranceType String?
+}
+
+model PurchaseWithoutConversation {
+  id String @id @default(uuid())
   vin String?
   color String?
   email String?

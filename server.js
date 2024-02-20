@@ -3687,11 +3687,25 @@ app.get('/purchase/:id', async (req, res) => {
       }
     })
 
-    return res.status(200).json({
-      data: purchase,
-      message: 'Purchase fetched successfully',
-      success: true
-    })
+    if (purchase) {
+      return res.status(200).json({
+        data: purchase,
+        message: 'Purchase fetched successfully',
+        success: true
+      })
+    } else {
+      const purchaseWithoutConversation = await prisma.purchaseWithoutConversation.findUnique({
+        where: {
+          id
+        }
+      })
+
+      return res.status(200).json({
+        data: purchaseWithoutConversation,
+        message: 'Purchase fetched successfully',
+        success: true
+      })
+    }
   } catch (error) {
     console.log('Error from Purchase/:id', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -3727,47 +3741,90 @@ app.post("/createPurchase", async (req, res) => {
   } = req.body
 
   try {
-    const purchase = await prisma.purchase.create({
-      data: {
-        vin,
-        color,
-        email,
-        state,
-        city,
-        houseType,
-        zip,
-        phone,
-        conversation_id,
-        user_id,
-        image,
-        lastName,
-        name,
-        isTruck,
-        total,
-        id: uuidv4(),
-        completed: false,
-        options,
-        address,
-        driverLicense,
-        vehicleInsurance,
-        failedTries: 0,
-        cancelled: false,
-        hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-        wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-        paypalPaymentId: '',
-        buyingType: 'temporary',
-        continuePurchase: false,
-        details,
-        vehicleType,
-        insuranceType,
-      }
-    })
+    if (conversation_id) {
+      const purchase = await prisma.purchase.create({
+        data: {
+          vin,
+          color,
+          email,
+          state,
+          city,
+          houseType,
+          zip,
+          phone,
+          conversation_id: conversation_id || '',
+          user_id,
+          image,
+          lastName,
+          name,
+          isTruck,
+          total,
+          id: uuidv4(),
+          completed: false,
+          options,
+          address,
+          driverLicense,
+          vehicleInsurance,
+          failedTries: 0,
+          cancelled: false,
+          hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+          wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+          paypalPaymentId: '',
+          buyingType: 'temporary',
+          continuePurchase: false,
+          details,
+          vehicleType,
+          insuranceType,
+        }
+      })
 
-    res.status(201).json({
-      data: purchase,
-      message: 'Purchase created successfully',
-      success: true
-    })
+      res.status(201).json({
+        data: purchase,
+        message: 'Purchase created successfully',
+        success: true
+      })
+    } else {
+      const purchase = await prisma.purchaseWithoutConversation.create({
+        data: {
+          vin,
+          color,
+          email,
+          state,
+          city,
+          houseType,
+          zip,
+          phone,
+          user_id,
+          image,
+          lastName,
+          name,
+          isTruck,
+          total,
+          id: uuidv4(),
+          completed: false,
+          options,
+          address,
+          driverLicense,
+          vehicleInsurance,
+          failedTries: 0,
+          cancelled: false,
+          hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+          wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+          paypalPaymentId: '',
+          buyingType: 'temporary',
+          continuePurchase: false,
+          details,
+          vehicleType,
+          insuranceType,
+        }
+      })
+
+      res.status(201).json({
+        data: purchase,
+        message: 'Purchase created successfully',
+        success: true
+      })
+    }
   } catch (error) {
     console.log('Error from createPurchase', error)
     res.status(500).json({ error: 'Internal server error' })
