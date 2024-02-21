@@ -3741,36 +3741,6 @@ app.post("/createPurchase", async (req, res) => {
   } = req.body
 
   try {
-    console.log({vin,
-      color,
-      email,
-      state,
-      city,
-      houseType,
-      zip,
-      phone,
-      user_id,
-      image,
-      lastName,
-      name,
-      isTruck,
-      total,
-      id: uuidv4(),
-      completed: false,
-      options,
-      address,
-      driverLicense,
-      vehicleInsurance: vehicleInsurance || '',
-      failedTries: 0,
-      cancelled: false,
-      hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-      wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-      paypalPaymentId: '',
-      buyingType: 'temporary',
-      continuePurchase: false,
-      details,
-      vehicleType,
-      insuranceType: insuranceType || '',})
     const purchase = await prisma.purchaseWithoutConversation.create({
       data: {
         vin,
@@ -3787,7 +3757,6 @@ app.post("/createPurchase", async (req, res) => {
         name,
         isTruck,
         total,
-        id: uuidv4(),
         completed: false,
         options,
         address,
@@ -3796,14 +3765,14 @@ app.post("/createPurchase", async (req, res) => {
         failedTries: 0,
         cancelled: false,
         hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-        wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
         paypalPaymentId: '',
         buyingType: 'temporary',
         continuePurchase: false,
         details,
         vehicleType,
         insuranceType: insuranceType || '',
-        
+        id: uuidv4(), 
+        wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
       }
     })
 
