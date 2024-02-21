@@ -3741,50 +3741,39 @@ app.post("/createPurchase", async (req, res) => {
   } = req.body
 
   try {
-    if (conversation_id) {
-      const purchase = await prisma.purchase.create({
-        data: {
-          vin,
-          color,
-          email,
-          state,
-          city,
-          houseType,
-          zip,
-          phone,
-          conversation_id: conversation_id || '',
-          user_id,
-          image,
-          lastName,
-          name,
-          isTruck,
-          total,
-          id: uuidv4(),
-          completed: false,
-          options,
-          address,
-          driverLicense,
-          vehicleInsurance: vehicleInsurance || '',
-          failedTries: 0,
-          cancelled: false,
-          hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-          wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-          paypalPaymentId: '',
-          buyingType: 'temporary',
-          continuePurchase: false,
-          details,
-          vehicleType,
-          insuranceType: insuranceType || '',
-        }
-      })
-
-      res.status(201).json({
-        data: purchase,
-        message: 'Purchase created successfully',
-        success: true
-      })
-    } else {
-      console.log({vin,
+    console.log({vin,
+      color,
+      email,
+      state,
+      city,
+      houseType,
+      zip,
+      phone,
+      user_id,
+      image,
+      lastName,
+      name,
+      isTruck,
+      total,
+      id: uuidv4(),
+      completed: false,
+      options,
+      address,
+      driverLicense,
+      vehicleInsurance: vehicleInsurance || '',
+      failedTries: 0,
+      cancelled: false,
+      hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+      wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+      paypalPaymentId: '',
+      buyingType: 'temporary',
+      continuePurchase: false,
+      details,
+      vehicleType,
+      insuranceType: insuranceType || '',})
+    const purchase = await prisma.purchaseWithoutConversation.create({
+      data: {
+        vin,
         color,
         email,
         state,
@@ -3813,49 +3802,16 @@ app.post("/createPurchase", async (req, res) => {
         continuePurchase: false,
         details,
         vehicleType,
-        insuranceType: insuranceType || '',})
-      const purchase = await prisma.purchaseWithoutConversation.create({
-        data: {
-          vin,
-          color,
-          email,
-          state,
-          city,
-          houseType,
-          zip,
-          phone,
-          user_id,
-          image,
-          lastName,
-          name,
-          isTruck,
-          total,
-          id: uuidv4(),
-          completed: false,
-          options,
-          address,
-          driverLicense,
-          vehicleInsurance: vehicleInsurance || '',
-          failedTries: 0,
-          cancelled: false,
-          hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-          wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-          paypalPaymentId: '',
-          buyingType: 'temporary',
-          continuePurchase: false,
-          details,
-          vehicleType,
-          insuranceType: insuranceType || '',
-          
-        }
-      })
+        insuranceType: insuranceType || '',
+        
+      }
+    })
 
-      res.status(201).json({
-        data: purchase,
-        message: 'Purchase created successfully',
-        success: true
-      })
-    }
+    res.status(201).json({
+      data: purchase,
+      message: 'Purchase created successfully',
+      success: true
+    })
   } catch (error) {
     console.log('Error from createPurchase', error)
     res.status(500).json({ error: 'Internal server error' })
