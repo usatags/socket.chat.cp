@@ -3805,7 +3805,7 @@ app.post("/createPurchase", async (req, res) => {
           options,
           address,
           driverLicense,
-          vehicleInsurance,
+          vehicleInsurance: vehicleInsurance || '',
           failedTries: 0,
           cancelled: false,
           hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
@@ -3815,7 +3815,8 @@ app.post("/createPurchase", async (req, res) => {
           continuePurchase: false,
           details,
           vehicleType,
-          insuranceType,
+          insuranceType: insuranceType || '',
+          
         }
       })
 
