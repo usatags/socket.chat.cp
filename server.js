@@ -3694,7 +3694,7 @@ app.get('/purchase/:id', async (req, res) => {
         success: true
       })
     } else {
-      const purchaseWithoutConversation = await prisma.purchaseWithoutConversation.findUnique({
+      const purchaseWithoutConversation = await prisma.purchasewithoutconversation.findUnique({
         where: {
           id
         }
@@ -3741,7 +3741,7 @@ app.post("/createPurchase", async (req, res) => {
   } = req.body
 
   try {
-    const purchase = await prisma.purchaseWithoutConversation.create({
+    const purchase = await prisma.purchasewithoutconversation.create({
       data: {
         vin,
         color,

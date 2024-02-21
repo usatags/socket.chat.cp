@@ -24,7 +24,7 @@ model User {
   messages Message[]
   conversations Conversation[]
   purchases Purchase[]
-  purchasesWithoutConversation PurchaseWithoutConversation[]
+  purchasesWithoutConversation Purchasewithoutconversation[]
 }
 
 model Message {
@@ -80,7 +80,7 @@ model Purchase {
   insuranceType String?
 }
 
-model PurchaseWithoutConversation {
+model Purchasewithoutconversation {
   id String @id @default(uuid())
   vin String?
   color String?
