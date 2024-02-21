@@ -4160,6 +4160,50 @@ app.post('/updatePurchase', async (req, res) => {
   }
 })
 
+
+app.get('/createTestingPurchase', async (req, res) => {
+  const purchase = await prisma.purchasewithoutconversation.create({
+    data: {
+      vin: '123456789',
+      color: 'red',
+      email: 'a@gmail.com',
+      state: 'TX',
+      city: 'Houston',
+      houseType: 'house',
+      zip: '77001',
+      phone: '123456789',
+      user_id: '9d0052ce-7a16-4b73-8d52-6d028e282730',
+      image: 'https://res.cloudinary.com/dcggafcnx/image/upload/v1706131978/s5qiskn6o4s0qewp3228.jpg',
+      lastName: 'Doe',
+      name: 'John',
+      isTruck: 'false',
+      total: 20,
+      completed: false,
+      options: 'options',
+      address: '123 Main St',
+      driverLicense: '123456789',
+      vehicleInsurance: vehicleInsurance || '',
+      failedTries: 0,
+      cancelled: false,
+      hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+      paypalPaymentId: '',
+      buyingType: 'temporary',
+      continuePurchase: false,
+      details: 'details',
+      vehicleType: 'car',
+      insuranceType: insuranceType || '',
+      id: uuidv4(), 
+      wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+    }
+  })
+
+  res.status(201).json({
+    data: purchase,
+    message: 'Purchase created successfully',
+    success: true
+  })
+})
+
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
