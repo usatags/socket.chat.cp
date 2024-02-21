@@ -4182,18 +4182,18 @@ app.get('/createTestingPurchase', async (req, res) => {
       options: 'options',
       address: '123 Main St',
       driverLicense: '123456789',
-      vehicleInsurance: vehicleInsurance || '',
+      vehicleInsurance:  '',
       failedTries: 0,
       cancelled: false,
-      hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+      hasVehicleInSurance: 'false',
       paypalPaymentId: '',
       buyingType: 'temporary',
       continuePurchase: false,
       details: 'details',
       vehicleType: 'car',
-      insuranceType: insuranceType || '',
+      insuranceType: '',
       id: uuidv4(), 
-      wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+      wantToGetVehicleInsurance: 'false',
     }
   })
 
