@@ -4135,10 +4135,9 @@ app.post('/updatePurchase', async (req, res) => {
       },
     })
 
-    if (!purchase) {
-      return res.status(404).json({ error: 'Purchase not found' })
-    }
+    
 
+    if (purchase) {
     await prisma.purchase.update({
       where: {
         id: purchaseID
@@ -4149,11 +4148,45 @@ app.post('/updatePurchase', async (req, res) => {
       }
     })
 
-    res.status(200).json({
-      data: purchase,
+    return res.status(200).json({
+      data: {
+        ...purchase,
+        paypalPaymentId,
+        completed: true,
+      },
       message: 'Purchase updated successfully',
       success: true
     })
+    } else {
+      const purchaseWithoutConversation = await prisma.purchasewithoutconversation.findUnique({
+        where: {
+          id: purchaseID
+        }
+      })
+
+      if (purchaseWithoutConversation) {
+        await prisma.purchasewithoutconversation.update({
+          where: {
+            id: purchaseID
+          },
+          data: {
+            paypalPaymentId,
+            completed: true,
+          }
+        })
+
+        return res.status(200).json({
+          data: {
+            ...purchaseWithoutConversation,
+            paypalPaymentId,
+            completed: true,
+          },
+          message: 'Purchase updated successfully',
+          success: true
+        })
+      }
+    }
+    return res.status(404).json({ error: 'Purchase not found' })
   } catch (error) {
     console.log('Error from updatePurchase', error)
     res.status(500).json({ error: 'Internal server error' })
