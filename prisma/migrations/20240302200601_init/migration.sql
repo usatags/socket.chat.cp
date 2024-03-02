@@ -65,7 +65,7 @@ CREATE TABLE "Purchase" (
 );
 
 -- CreateTable
-CREATE TABLE "PurchaseWithoutConversation" (
+CREATE TABLE "Purchasewithoutconversation" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "vin" TEXT,
     "color" TEXT,
@@ -96,7 +96,67 @@ CREATE TABLE "PurchaseWithoutConversation" (
     "buyingType" TEXT,
     "paypalPaymentId" TEXT,
     "insuranceType" TEXT,
-    CONSTRAINT "PurchaseWithoutConversation_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Purchasewithoutconversation_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Purchasevisitor" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "vin" TEXT,
+    "color" TEXT,
+    "email" TEXT,
+    "state" TEXT,
+    "name" TEXT,
+    "lastName" TEXT,
+    "address" TEXT,
+    "city" TEXT,
+    "houseType" TEXT,
+    "zip" TEXT,
+    "phone" TEXT,
+    "driverLicense" TEXT,
+    "hasVehicleInSurance" TEXT,
+    "wantToGetVehicleInsurance" TEXT,
+    "vehicleInsurance" TEXT,
+    "details" TEXT,
+    "isTruck" TEXT,
+    "total" INTEGER DEFAULT 0,
+    "continuePurchase" BOOLEAN,
+    "completed" BOOLEAN DEFAULT false,
+    "options" TEXT,
+    "cancelled" BOOLEAN DEFAULT false,
+    "failedTries" INTEGER DEFAULT 0,
+    "image" TEXT,
+    "vehicleType" TEXT,
+    "buyingType" TEXT,
+    "paypalPaymentId" TEXT,
+    "insuranceType" TEXT
+);
+
+-- CreateTable
+CREATE TABLE "PlateDetailsCodes" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "tagName" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "tagIssueDate" DATETIME NOT NULL,
+    "tagExpirationDate" DATETIME NOT NULL,
+    "purchasedOrLeased" TEXT NOT NULL,
+    "customerType" TEXT NOT NULL,
+    "transferPlate" TEXT NOT NULL,
+    "vin" TEXT NOT NULL,
+    "vehicleYear" TEXT NOT NULL,
+    "vehicleMake" TEXT NOT NULL,
+    "vehicleModel" TEXT NOT NULL,
+    "vehicleBodyStyle" TEXT NOT NULL,
+    "vehicleColor" TEXT NOT NULL,
+    "vehicleGVW" TEXT NOT NULL,
+    "dealerLicenseNumber" TEXT NOT NULL,
+    "dealerName" TEXT NOT NULL,
+    "dealerAddress" TEXT NOT NULL,
+    "dealerPhone" TEXT NOT NULL,
+    "dealerType" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "hasBarcode" BOOLEAN NOT NULL,
+    "hasQRCode" BOOLEAN NOT NULL
 );
 
 -- CreateTable

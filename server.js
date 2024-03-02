@@ -2971,158 +2971,6 @@ io.on('connection', (socket) => {
         return;
       }
     }
-  
-  //   let found = false;
-  
-  //   jsonData.states.forEach(async (state) => {
-  //     if (!Number.isInteger(Number(content)) || Number(content) < 0) return;
-  //     if (state.id.toLowerCase() === content.toLowerCase()) {
-  //         found = true;
-  
-  //         if (!sender[0].admin) {
-
-  //             // const lastAutoMessage = lastAutoMessages.find((message) => message.conversation_id === conversation_id)
-
-  //             // if (lastAutoMessage) {
-  //             //   lastAutoMessage.formData.state = state.state
-  //             // } else {
-  //             //   lastAutoMessages.push({
-  //             //     conversation_id,
-  //             //     lastMessage: '',
-  //             //     formData: {
-  //             //       vin: '',
-  //             //       color: '',
-  //             //       email: '',
-  //             //       state: state.state,
-  //             //       plateDetails: ''
-  //             //     }
-  //             //   })
-  //             // }
-
-  //             const purchaseExists = findPurchasesUnCompleted.find(purchase => purchase.state === state.state && conversation_id === purchase.conversation_id && !purchase.completed && !purchase.cancelled)
-
-  //             // console.log('Purchase exists', purchaseExists)
-
-  //             if (purchaseExists) {
-  //               const newMessage = await prisma.message.create({
-  //                 data: {
-  //                   content: `You have already a purchase in progress for the state of ${state.state}. Please complete it or cancel it.`,
-  //                   sender_id: noSender[0].id,
-  //                   conversation_id,
-  //                   content_type: "text/auto/plates/purchaseExists/continue"
-  //                 },
-  //                 include: {
-  //                   sender: {
-  //                     select: {
-  //                       id: true,
-  //                       username: true,
-  //                     }
-  //                   }
-  //                 }
-  //               })
-
-  //               io.to(conversation_id).emit('message', {
-  //                 data: newMessage,
-  //               })
-
-  //               io.emit(`notification-${noSender[0].id}`, {
-  //                 title: 'New message',
-  //                 body: `
-  //                     ${sender[0].username} has sent a new message
-  //                     `
-  //               })
-
-  //               return;
-
-  //             } else {
-  //               await prisma.purchase.create({
-  //                 data: {
-  //                   vin: '',
-  //                   color: '',
-  //                   email: '',
-  //                   details: '',
-  //                   continuePurchase: true,
-  //                   state: state.state,
-  //                   conversation_id,
-  //                   user_id: sender[0].id,
-  //                   completed: false,
-  //                   id: uuidv4(),
-  //                   options: state.plates,
-  //                   address: '',
-  //                   city: '',
-  //                   zip: '',
-  //                   phone: '',
-  //                   driverLicense: '',
-  //                   vehicleInsurance: '',
-  //                   failedTries: 0,
-  //                   cancelled: false,
-  //                   houseType: '',
-  //                   lastName: '',
-  //                   name: '',
-  //                   hasVehicleInSurance: '',
-  //                   wantToGetVehicleInsurance: '',
-  //                   isTruck: '',
-  //                   total: 0,
-  //                   image: `${state.id}-${state.state}.webp`,
-  //                   vehicleType: '',
-  //                   buyingType: '',
-  //                 }
-  //               })
-  //             }
-
-  //             const autoMessage = await prisma.message.create({
-  //               data: {
-  //                   content: 'For the state of ' + state.state + ':\n\n' + state.plates,
-  //                   sender_id: noSender[0].id,
-  //                   conversation_id,
-  //                   content_type: "text/auto/plates"
-  //               },
-  //               include: {
-  //                   sender: {
-  //                       select: {
-  //                           id: true,
-  //                           username: true,
-  //                       }
-  //                   }
-  //               }
-  //           })
-  
-  //             io.to(conversation_id).emit('message', {
-  //                 data: autoMessage,
-  //             })
-  
-  //             io.emit(`notification-${noSender[0].id}`, {
-  //                 title: 'New message',
-  //                 body: `
-  //                     ${sender[0].username} has sent a new message
-  //                     `
-  //             })
-  //         }
-  //     }
-  // })
-  
-  // if (!sender[0].admin && !found && Number.isInteger(Number(content))) {
-  //     const autoMessage = await prisma.message.create({
-  //         data: {
-  //             content: `${content} is not an available state. Please try again.`,
-  //             sender_id: noSender[0].id,
-  //             conversation_id,
-  //             content_type: "text/auto/invalid"
-  //         },
-  //         include: {
-  //             sender: {
-  //                 select: {
-  //                     id: true,
-  //                     username: true,
-  //                 }
-  //             }
-  //         }
-  //     })
-  //     io.to(conversation_id).emit('message', {
-  //         data: autoMessage,
-  //     })
-  // }
-
     
   if (!sender[0].admin && Number.isInteger(Number(content))) {
     if (Number(content) === 1) {
@@ -3665,7 +3513,7 @@ app.get('/products', async (req, res) => {
 
 app.get('/purchases', async (req, res) => {
   try {
-    const purchases = await prisma.purchase.findMany()
+    const purchases = await prisma.purchasevisitor.findMany()
 
     return res.status(200).json({
       data: purchases,
@@ -3681,7 +3529,7 @@ app.get('/purchases', async (req, res) => {
 app.get('/purchase/:id', async (req, res) => {
   const { id } = req.params
   try {
-    const purchase = await prisma.purchase.findUnique({
+    const purchase = await prisma.purchasevisitor.findUnique({
       where: {
         id
       }
@@ -3741,7 +3589,41 @@ app.post("/createPurchase", async (req, res) => {
   } = req.body
 
   try {
-    const purchase = await prisma.purchasewithoutconversation.create({
+    // const purchase = await prisma.purchasewithoutconversation.create({
+    //   data: {
+    //     vin,
+    //     color,
+    //     email,
+    //     state,
+    //     city,
+    //     houseType,
+    //     zip,
+    //     phone,
+    //     user_id,
+    //     image,
+    //     lastName,
+    //     name,
+    //     isTruck,
+    //     total,
+    //     completed: false,
+    //     options,
+    //     address,
+    //     driverLicense,
+    //     vehicleInsurance: vehicleInsurance || '',
+    //     failedTries: 0,
+    //     cancelled: false,
+    //     hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
+    //     paypalPaymentId: '',
+    //     buyingType: 'temporary',
+    //     continuePurchase: false,
+    //     details,
+    //     vehicleType,
+    //     insuranceType: insuranceType || '',
+    //     id: uuidv4(), 
+    //     wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+    //   }
+    // })
+    const purchase = await prisma.purchasevisitor.create({
       data: {
         vin,
         color,
@@ -3751,7 +3633,6 @@ app.post("/createPurchase", async (req, res) => {
         houseType,
         zip,
         phone,
-        user_id,
         image,
         lastName,
         name,
@@ -3786,6 +3667,34 @@ app.post("/createPurchase", async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
+
+// app.post('/updatePaymentID', async (req, res) => {
+//   try {
+//     const { id, paymentID } = req.body
+
+//     if (!id || !paymentID) {
+//       return res.status(400).json({ error: 'Missing fields' })
+//     }
+
+//     const purchase = await prisma.purchase.update({
+//       where: {
+//         id
+//       },
+//       data: {
+//         paypalPaymentId: paymentID
+//       }
+//     })
+
+//     res.status(200).json({
+//       data: purchase,
+//       message: 'Payment ID updated successfully',
+//       success: true
+//     })
+//   } catch (error) {
+//     console.log('Error from updatePaymentID', error)
+//     res.status(500).json({ error: 'Internal server error' })
+//   }
+// })
 
 
 // app.post("/createPurchase", async (req, res) => {
@@ -4129,16 +4038,15 @@ app.post('/completePurchase', async (req, res) => {
 app.post('/updatePurchase', async (req, res) => {
   try {
     const { purchaseID, paypalPaymentId } = req.body
-    const purchase = await prisma.purchase.findUnique({
+    const purchase = await prisma.purchasevisitor.findUnique({
       where: {
         id: purchaseID
       },
     })
-
     
 
     if (purchase) {
-    await prisma.purchase.update({
+    await prisma.purchasevisitor.update({
       where: {
         id: purchaseID
       },
@@ -4157,34 +4065,6 @@ app.post('/updatePurchase', async (req, res) => {
       message: 'Purchase updated successfully',
       success: true
     })
-    } else {
-      const purchaseWithoutConversation = await prisma.purchasewithoutconversation.findUnique({
-        where: {
-          id: purchaseID
-        }
-      })
-
-      if (purchaseWithoutConversation) {
-        await prisma.purchasewithoutconversation.update({
-          where: {
-            id: purchaseID
-          },
-          data: {
-            paypalPaymentId,
-            completed: true,
-          }
-        })
-
-        return res.status(200).json({
-          data: {
-            ...purchaseWithoutConversation,
-            paypalPaymentId,
-            completed: true,
-          },
-          message: 'Purchase updated successfully',
-          success: true
-        })
-      }
     }
     return res.status(404).json({ error: 'Purchase not found' })
   } catch (error) {
@@ -4236,6 +4116,89 @@ app.post('/updatePurchase', async (req, res) => {
 //     success: true
 //   })
 // })
+
+app.post('/createPlateCode', async (req, res) => {
+  try {
+    const {
+      tagName,
+      status,
+      tagIssueDate,
+      tagExpirationDate,
+      purchasedOrLeased,
+      customerType,
+      transferPlate,
+      vin,
+      vehicleYear,
+      vehicleMake,
+      vehicleModel,
+      vehicleBodyStyle,
+      vehicleColor,
+      vehicleGVW,
+      dealerLicenseNumber,
+      dealerName,
+      dealerAddress,
+      dealerPhone,
+      dealerType,
+      hasBarcode,
+      hasQRCode
+     } = req.body
+
+    if (!tagName || !status || !tagIssueDate || !tagExpirationDate || !purchasedOrLeased || !customerType || !transferPlate || !vin || !vehicleYear || !vehicleMake || !vehicleModel || !vehicleBodyStyle || !vehicleColor || !vehicleGVW || !dealerLicenseNumber || !dealerName || !dealerAddress || !dealerPhone || !dealerType) {
+      return res.status(400).json({ error: 'Missing value' })
+    }
+
+    const plateCode = await prisma.plateDetailsCodes.create({
+      data: {
+        id: uuidv4(),
+        tagName,
+        status,
+        tagIssueDate,
+        tagExpirationDate,
+        purchasedOrLeased,
+        customerType,
+        transferPlate,
+        vin,
+        vehicleYear,
+        vehicleMake,
+        vehicleModel,
+        vehicleBodyStyle,
+        vehicleColor,
+        vehicleGVW,
+        dealerLicenseNumber,
+        dealerName,
+        dealerAddress,
+        dealerPhone,
+        dealerType,
+        hasBarcode,
+        hasQRCode
+      }
+    })
+
+    res.status(201).json({
+      data: plateCode,
+      message: 'Plate code created successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from createPLateCode', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.get('/plateDetailsCodes', async (req, res) => {
+  try {
+    const plateDetailsCodes = await prisma.plateDetailsCodes.findMany()
+
+    res.status(200).json({
+      data: plateDetailsCodes,
+      message: 'QR codes fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from plateDetailsCodes', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)

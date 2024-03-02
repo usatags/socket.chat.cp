@@ -113,3 +113,61 @@ model Purchasewithoutconversation {
   paypalPaymentId String?
   insuranceType String?
 }
+
+model Purchasevisitor {
+  id String @id @default(uuid())
+  vin String?
+  color String?
+  email String?
+  state String?
+  name String?
+  lastName String?
+  address String?
+  city String?
+  houseType String?
+  zip String?
+  phone String?
+  driverLicense String?
+  hasVehicleInSurance String?
+  wantToGetVehicleInsurance String?
+  vehicleInsurance String?
+  details String?
+  isTruck String?
+  total Int? @default(0)
+  continuePurchase Boolean?
+  completed Boolean? @default(false)
+  options String?
+  cancelled Boolean? @default(false)
+  failedTries Int? @default(0)
+  image String?
+  vehicleType String?
+  buyingType String?
+  paypalPaymentId String?
+  insuranceType String?
+}
+
+model PlateDetailsCodes {
+  id String @id @default(uuid())
+  tagName String
+  status String
+  tagIssueDate DateTime
+  tagExpirationDate DateTime
+  purchasedOrLeased String
+  customerType String
+  transferPlate String
+  vin String
+  vehicleYear String
+  vehicleMake String
+  vehicleModel String
+  vehicleBodyStyle String
+  vehicleColor String
+  vehicleGVW String
+  dealerLicenseNumber String
+  dealerName String
+  dealerAddress String
+  dealerPhone String
+  dealerType String
+  createdAt DateTime @default(now())
+  hasBarcode Boolean
+  hasQRCode Boolean
+}
