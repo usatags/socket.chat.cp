@@ -4140,7 +4140,8 @@ app.post('/createPlateCode', async (req, res) => {
       dealerPhone,
       dealerType,
       hasBarcode,
-      hasQRCode
+      hasQRCode,
+      state
      } = req.body
 
     // if (!tagName && !status && !tagIssueDate && !tagExpirationDate && !purchasedOrLeased && !customerType && !transferPlate && !vin && !vehicleYear && !vehicleMake && !vehicleModel && !vehicleBodyStyle && !vehicleColor && !vehicleGVW && !dealerLicenseNumber && !dealerName && !dealerAddress && !dealerPhone && !dealerType) {
@@ -4230,7 +4231,8 @@ app.post('/createPlateCode', async (req, res) => {
         dealerPhone,
         dealerType,
         hasBarcode: true,
-        hasQRCode: true
+        hasQRCode: true,
+        State: state
       }
     })
 

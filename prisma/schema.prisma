@@ -115,8 +115,8 @@ model PlateDetailsCodes {
   id String @id @default(uuid())
   tagName String?
   status String?
-  tagIssueDate DateTime?
-  tagExpirationDate DateTime?
+  tagIssueDate String?
+  tagExpirationDate String?
   purchasedOrLeased String?
   customerType String?
   transferPlate String?
@@ -135,4 +135,5 @@ model PlateDetailsCodes {
   createdAt DateTime @default(now())
   hasBarcode Boolean?
   hasQRCode Boolean?
+  State String?
 }
