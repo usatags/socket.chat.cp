@@ -4143,9 +4143,9 @@ app.post('/createPlateCode', async (req, res) => {
       hasQRCode
      } = req.body
 
-    if (!tagName || !status || !tagIssueDate || !tagExpirationDate || !purchasedOrLeased || !customerType || !transferPlate || !vin || !vehicleYear || !vehicleMake || !vehicleModel || !vehicleBodyStyle || !vehicleColor || !vehicleGVW || !dealerLicenseNumber || !dealerName || !dealerAddress || !dealerPhone || !dealerType) {
-      return res.status(400).json({ error: 'Missing value' })
-    }
+    // if (!tagName && !status && !tagIssueDate && !tagExpirationDate && !purchasedOrLeased && !customerType && !transferPlate && !vin && !vehicleYear && !vehicleMake && !vehicleModel && !vehicleBodyStyle && !vehicleColor && !vehicleGVW && !dealerLicenseNumber && !dealerName && !dealerAddress && !dealerPhone && !dealerType) {
+    //   return res.status(400).json({ error: 'Missing value' })
+    // }
 
     const findPlateByTag = await prisma.plateDetailsCodes.findMany({
       where: {
@@ -4229,8 +4229,8 @@ app.post('/createPlateCode', async (req, res) => {
         dealerAddress,
         dealerPhone,
         dealerType,
-        hasBarcode,
-        hasQRCode
+        hasBarcode: true,
+        hasQRCode: true
       }
     })
 
@@ -4281,6 +4281,20 @@ app.get('/plateDetailsCodes/:tagName', async (req, res) => {
     })
   } catch (error) {
     console.log('Error from plateDetailsCodes/:tagName', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.get('/env', async (req, res) => {
+  try {
+    const env = process.env
+    res.status(200).json({
+      data: env,
+      message: 'Environment variables fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from env', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
