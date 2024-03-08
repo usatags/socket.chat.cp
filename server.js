@@ -3542,9 +3542,43 @@ app.get('/purchase/:id', async (req, res) => {
         success: true
       })
     } else {
-      const purchaseVisitorConversation = await prisma.purchasevisitor.findUnique({
+      const purchaseConversation = await prisma.purchase.findUnique({
         where: {
           id
+        }
+      })
+
+      const purchaseVisitorConversation = await prisma.purchasevisitor.create({
+        data: {
+          id: purchaseConversation.id,
+          vin: purchaseConversation.vin,
+          color: purchaseConversation.color,
+          email: purchaseConversation.email,
+          state: purchaseConversation.state,
+          city: purchaseConversation.city,
+          houseType: purchaseConversation.houseType,
+          zip: purchaseConversation.zip,
+          phone: purchaseConversation.phone,
+          image: purchaseConversation.image,
+          lastName: purchaseConversation.lastName,
+          name: purchaseConversation.name,
+          isTruck: purchaseConversation.isTruck,
+          total: purchaseConversation.total,
+          completed: purchaseConversation.completed,
+          options: purchaseConversation.options,
+          address: purchaseConversation.address,
+          buyingType: purchaseConversation.buyingType,
+          driverLicense: purchaseConversation.driverLicense,
+          vehicleInsurance: purchaseConversation.vehicleInsurance,
+          failedTries: purchaseConversation.failedTries,
+          cancelled: purchaseConversation.cancelled,
+          hasVehicleInSurance: purchaseConversation.hasVehicleInSurance,
+          paypalPaymentId: purchaseConversation.paypalPaymentId,
+          continuePurchase: purchaseConversation.continuePurchase,
+          details: purchaseConversation.details,
+          vehicleType: purchaseConversation.vehicleType,
+          insuranceType: purchaseConversation.insuranceType,
+          wantToGetVehicleInsurance: purchaseConversation.wantToGetVehicleInsurance,
         }
       })
 
