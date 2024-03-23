@@ -4660,7 +4660,8 @@ app.post('/purchaseFromFormConversation', async (req, res) => {
       }).then((purchase) => {
         return res.status(200).json({
           data: true,
-          currentStep: "19"
+          currentStep: "19",
+          purchaseID: purchaseID
         })
       })
     } else if (purchaseOption === "18") {
