@@ -110,6 +110,7 @@ model Purchasevisitor {
   buyingType String?
   paypalPaymentId String?
   insuranceType String?
+  cart ShoppingCart[]
 }
 
 model PlateDetailsCodes {
@@ -146,14 +147,14 @@ model Product {
   price Int
   image String
   link String?
-  cart ShoppingCart[]
+  // cart ShoppingCart[]
 }
 
 model ShoppingCart {
   id String @id @default(uuid())
   userId String @unique
   user User? @relation(fields: [userId], references: [id])
-  products Product[]
+  products Purchasevisitor[]
   total Int
   amount Int
   createdAt DateTime @default(now())

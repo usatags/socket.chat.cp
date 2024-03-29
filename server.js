@@ -3268,7 +3268,7 @@ app.post('/login', async (req, res) => {
       })
     }
   
-    res.cookie('userID', usernameTaken.id, { httpOnly: true })
+    res.cookie('userID', usernameTaken.id, { httpOnly: true, sameSite: 'none', secure: true })
     res.status(200).json({
       data: usernameTaken,
       message: 'User logged in successfully',
@@ -3293,7 +3293,7 @@ app.post('/register', async (req, res) => {
     const userExists = await findUserByEmail(email)
 
     if (userExists) {
-      res.cookie('userID', userExists.id, { httpOnly: true })
+      res.cookie('userID', userExists.id, { httpOnly: true, sameSite: 'none', secure: true })
       return res.status(201).json({
         data: userExists,
         message: 'User already exists',
@@ -3315,7 +3315,7 @@ app.post('/register', async (req, res) => {
         }
       })
 
-      res.cookie('userID', user.id, { httpOnly: true })
+      res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
       return res.status(201).json({
         data: user,
         message: 'User created successfully',
@@ -3331,7 +3331,7 @@ app.post('/register', async (req, res) => {
       image
     })
 
-    res.cookie('userID', user.id, { httpOnly: true })
+    res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
     res.status(201).json({
       data: user,
       message: 'User created successfully',
@@ -4581,7 +4581,7 @@ app.get("/auth/token", async (req, res) => {
         }
       })
 
-      res.cookie('userID', newUser.id, { httpOnly: true })
+      res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
       return res.status(200).json({
         data: true,
         message: 'User fetched successfully',
@@ -4596,7 +4596,7 @@ app.get("/auth/token", async (req, res) => {
     })
 
     if (user) {
-      res.cookie('userID', user.id, { httpOnly: true })
+      res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
     } else {
       const newUser = await prisma.user.create({
         data: {
@@ -4604,7 +4604,7 @@ app.get("/auth/token", async (req, res) => {
         }
       })
 
-      res.cookie('userID', newUser.id, { httpOnly: true })
+      res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
     }
 
     return res.status(200).json({
