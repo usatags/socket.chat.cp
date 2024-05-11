@@ -12,6 +12,10 @@ const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
 const jsonData = require('./automaticMessages.json')
 const cookieParser = require('cookie-parser')
+const authRouter = require('./router/auth.route')
+const userRouter = require('./router/user.route')
+const purchaseRouter = require('./router/purchase.route')
+const cartRouter = require('./router/cart.route')
 
 dotenv.config()
 const port = process.env.PORT || 3000
@@ -29,13 +33,13 @@ const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
-  origin: 'https://usatag.us',
+  origin: '*',
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", 'https://usatag.us');
+  res.header("Access-Control-Allow-Origin", '*');
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -56,34 +60,6 @@ const findAllUsers = async () => {
   return users || []
 }
 
-const createNewUser = async ({
-  username, socketID, email, password, image, phone_number
-}) => {
-  const user = await prisma.user.create({
-    data: {
-      username,
-      socketId: socketID,
-      active: true,
-      id: uuidv4(),
-      password: bcrypt.hashSync(password, 10),
-      email,
-      image,
-      phone_number,
-      admin: false
-    }
-  })
-  return user || null
-}
-
-const findUserByEmail = async (email) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email
-    }
-  })
-  return user || null
-}
-
 const findUserByID = async (id) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -102,22 +78,6 @@ const findRoomByID = async (id) => {
   return room || null
 }
 
-const findOtherUserOnConversation = async (conversationID, userID) => {
-  const conversation = await prisma.conversation.findUnique({
-    where: {
-      id: conversationID
-    },
-    select: {
-      members: true
-    }
-  })
-
-  const otherUser = conversation.members.filter(member => member.id !== userID)
-
-  return otherUser[0] || null
-}
-
-// const lastAutoMessages = []
 const regexForVIN = /^[a-zA-Z0-9]{9}[a-zA-Z0-9-]{2}[0-9]{6}$/
 const regexForEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
 const regexForName = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
@@ -460,7 +420,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -654,7 +614,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -817,7 +777,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -935,7 +895,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1053,7 +1013,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1171,7 +1131,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1289,7 +1249,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1409,7 +1369,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1528,7 +1488,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1646,7 +1606,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1764,7 +1724,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1884,7 +1844,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2002,7 +1962,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2161,7 +2121,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2317,7 +2277,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2435,7 +2395,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2590,7 +2550,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2712,7 +2672,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2834,7 +2794,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2953,7 +2913,7 @@ io.on('connection', (socket) => {
 
           const newMessage = await prisma.message.create({
             data: {
-              content: `Your request has been cancelled.`,
+              content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
               sender_id: noSender[0].id,
               conversation_id,
               content_type: "text/auto/plates/success/cancelled"
@@ -3206,142 +3166,15 @@ io.on('connection', (socket) => {
   })
 })
 
-app.get('/users/:roleFilter', async (req, res) => {
-  const { roleFilter } = req.params
+//auth
+app.use('/', authRouter)
+//user
+app.use('/', userRouter)
+//purchase
+app.use('/', purchaseRouter)
+//cart
+app.use('/', cartRouter)
 
-  const parsedRoleFilter = roleFilter === 'true' ? true : false
-  try {
-    const users = await prisma.user.findMany({
-      where: {
-        NOT: {
-          admin: {
-            equals: parsedRoleFilter
-          }
-        }
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone_number: true,
-        image: true,
-        active: true,
-        socketId: true,
-        admin: true
-      }
-    })
-
-    res.status(200).json({
-      data: users,
-      message: 'Users fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from users', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.post('/login', async (req, res) => {
-  const {
-    password,
-    email
-  } = req.body
-  try {
-    const usernameTaken = await prisma.user.findUnique({
-      where: {
-        email
-      }
-    })
-  
-    if (!usernameTaken) {
-      return res.status(400).json({
-        error: 'Invalid email'
-      })
-    }
-  
-    const passwordMatch = bcrypt.compareSync(password, usernameTaken.password)
-  
-    if (!passwordMatch) {
-      return res.status(400).json({
-        error: 'Invalid password'
-      })
-    }
-  
-    res.cookie('userID', usernameTaken.id, { httpOnly: true, sameSite: 'none', secure: true })
-    res.status(200).json({
-      data: usernameTaken,
-      message: 'User logged in successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from login', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post('/register', async (req, res) => {
-  try {
-    const body = req.body
-    const { userID } = req.cookies
-    const { username, email, password, phone_number, image } = body
-
-    if (!username || !email || !password || !phone_number || !image) {
-      return res.status(400).json({ error: 'Missing fields' })
-    }
-
-    const userExists = await findUserByEmail(email)
-
-    if (userExists) {
-      res.cookie('userID', userExists.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(201).json({
-        data: userExists,
-        message: 'User already exists',
-        success: true
-      })
-    }
-
-    if (userID) {
-      const user = await prisma.user.update({
-        where: {
-          id: userID
-        },
-        data: {
-          username,
-          email,
-          password,
-          phone_number,
-          image
-        }
-      })
-
-      res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(201).json({
-        data: user,
-        message: 'User created successfully',
-        success: true
-      })
-    }
-
-    const user = await createNewUser({
-      username,
-      email,
-      password,
-      phone_number,
-      image
-    })
-
-    res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
-    res.status(201).json({
-      data: user,
-      message: 'User created successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Errof from register', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
 
 app.get('/room/:roomID/messages', async (req, res) => {
   const { roomID } = req.params
@@ -3472,199 +3305,6 @@ app.get('/products', async (req, res) => {
     })
   } catch (error) {
     console.log('Error from products', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/purchases', async (req, res) => {
-  try {
-    const purchases = await prisma.purchasevisitor.findMany()
-    const purchasesFromPurchase = await prisma.purchase.findMany()
-
-    return res.status(200).json({
-      data: purchases.concat(purchasesFromPurchase),
-      message: 'Purchases fetched successfully',
-      success: true
-    })    
-  } catch (error) {
-    console.log('Error from purchaseByState', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/purchase/:id', async (req, res) => {
-  const { id } = req.params
-  try {
-    const purchase = await prisma.purchasevisitor.findUnique({
-      where: {
-        id
-      }
-    })
-
-    if (purchase) {
-      return res.status(200).json({
-        data: purchase,
-        message: 'Purchase fetched successfully',
-        success: true
-      })
-    } else {
-      const purchaseConversation = await prisma.purchase.findUnique({
-        where: {
-          id
-        }
-      })
-
-      const purchaseVisitorConversation = await prisma.purchasevisitor.create({
-        data: {
-          id: purchaseConversation.id,
-          vin: purchaseConversation.vin,
-          color: purchaseConversation.color,
-          email: purchaseConversation.email,
-          state: purchaseConversation.state,
-          city: purchaseConversation.city,
-          houseType: purchaseConversation.houseType,
-          zip: purchaseConversation.zip,
-          phone: purchaseConversation.phone,
-          image: purchaseConversation.image,
-          lastName: purchaseConversation.lastName,
-          name: purchaseConversation.name,
-          isTruck: purchaseConversation.isTruck,
-          total: purchaseConversation.total,
-          completed: purchaseConversation.completed,
-          options: purchaseConversation.options,
-          address: purchaseConversation.address,
-          buyingType: purchaseConversation.buyingType,
-          driverLicense: purchaseConversation.driverLicense,
-          vehicleInsurance: purchaseConversation.vehicleInsurance,
-          failedTries: purchaseConversation.failedTries,
-          cancelled: purchaseConversation.cancelled,
-          hasVehicleInSurance: purchaseConversation.hasVehicleInSurance,
-          paypalPaymentId: purchaseConversation.paypalPaymentId,
-          continuePurchase: purchaseConversation.continuePurchase,
-          details: purchaseConversation.details,
-          vehicleType: purchaseConversation.vehicleType,
-          insuranceType: purchaseConversation.insuranceType,
-          wantToGetVehicleInsurance: purchaseConversation.wantToGetVehicleInsurance,
-        }
-      })
-
-      return res.status(200).json({
-        data: purchaseVisitorConversation,
-        message: 'Purchase fetched successfully',
-        success: true
-      })
-    }
-  } catch (error) {
-    console.log('Error from Purchase/:id', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/createPurchase", async (req, res) => {
-  const {
-    vin,
-    color,
-    email,
-    state,
-    city,
-    houseType,
-    zip,
-    phone,
-    conversation_id,
-    user_id,
-    image,
-    lastName,
-    name,
-    isTruck,
-    total,
-    vehicleType,
-    details,
-    options,
-    address,
-    vehicleInsurance,
-    driverLicense,
-    insuranceType,
-    wantToGetVehicleInsurance,
-    hasVehicleInSurance
-  } = req.body
-
-  try {
-    // const purchase = await prisma.purchasewithoutconversation.create({
-    //   data: {
-    //     vin,
-    //     color,
-    //     email,
-    //     state,
-    //     city,
-    //     houseType,
-    //     zip,
-    //     phone,
-    //     user_id,
-    //     image,
-    //     lastName,
-    //     name,
-    //     isTruck,
-    //     total,
-    //     completed: false,
-    //     options,
-    //     address,
-    //     driverLicense,
-    //     vehicleInsurance: vehicleInsurance || '',
-    //     failedTries: 0,
-    //     cancelled: false,
-    //     hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-    //     paypalPaymentId: '',
-    //     buyingType: 'temporary',
-    //     continuePurchase: false,
-    //     details,
-    //     vehicleType,
-    //     insuranceType: insuranceType || '',
-    //     id: uuidv4(), 
-    //     wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-    //   }
-    // })
-    console.log('req.body', req.body)
-    const purchase = await prisma.purchasevisitor.create({
-      data: {
-        vin,
-        color,
-        email,
-        state,
-        city,
-        houseType,
-        zip,
-        phone,
-        image,
-        lastName,
-        name,
-        isTruck,
-        total,
-        completed: false,
-        options,
-        address,
-        driverLicense,
-        vehicleInsurance: vehicleInsurance || '',
-        failedTries: 0,
-        cancelled: false,
-        hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-        paypalPaymentId: '',
-        buyingType: 'temporary',
-        continuePurchase: false,
-        details,
-        vehicleType,
-        insuranceType: insuranceType || '',
-        id: uuidv4(), 
-        wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-      }
-    })
-
-    res.status(201).json({
-      data: purchase,
-      message: 'Purchase created successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from createPurchase', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
@@ -3830,79 +3470,6 @@ app.post("/api/orders/:orderID/capture", async (req, res) => {
   }
 });
 
-//Boton del seguro click aquí e ir al chat
-
-
-app.post('/completePurchase', async (req, res) => {
-  try {
-    const { purchaseID } = req.body
-    const purchase = await prisma.purchase.findUnique({
-      where: {
-        id: purchaseID
-      },
-    })
-
-    if (!purchase) {
-      return res.status(404).json({ error: 'Purchase not found' })
-    }
-
-    await prisma.purchase.update({
-      where: {
-        id: purchaseID
-      },
-      data: {
-        completed: true
-      }
-    })
-
-    res.status(200).json({
-      data: purchase,
-      message: 'Purchase completed successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from completePurchase', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})  
-
-app.post('/updatePurchase', async (req, res) => {
-  try {
-    const { purchaseID, paypalPaymentId } = req.body
-    const purchase = await prisma.purchasevisitor.findUnique({
-      where: {
-        id: purchaseID
-      },
-    })
-    
-
-    if (purchase) {
-    await prisma.purchasevisitor.update({
-      where: {
-        id: purchaseID
-      },
-      data: {
-        paypalPaymentId,
-        completed: true,
-      }
-    })
-
-    return res.status(200).json({
-      data: {
-        ...purchase,
-        paypalPaymentId,
-        completed: true,
-      },
-      message: 'Purchase updated successfully',
-      success: true
-    })
-    }
-    return res.status(404).json({ error: 'Purchase not found' })
-  } catch (error) {
-    console.log('Error from updatePurchase', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
 
 app.post('/createPlateCode', async (req, res) => {
   try {
@@ -4049,7 +3616,6 @@ app.get('/plateDetailsCodes', async (req, res) => {
   }
 })
 
-
 app.get('/plateDetailsCodes/:tagName', async (req, res) => {
   const { tagName } = req.params
   try {
@@ -4092,784 +3658,6 @@ app.get('/env', async (req, res) => {
     })
   } catch (error) {
     console.log('Error from env', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post('/purchaseFromFormConversation', async (req, res) => {
-  const { purchaseOption, data, room } = req.body
-  try {
-    if (purchaseOption === "0") {
-      await prisma.purchase.create({
-        data: {
-          vin: '',
-          color: '',
-          email: '',
-          details: '',
-          continuePurchase: true,
-          state: '',
-          conversation_id: data.conversationID,
-          user_id: data.senderID,
-          completed: false,
-          id: uuidv4(),
-          options: '',
-          address: '',
-          city: '',
-          zip: '',
-          phone: '',
-          driverLicense: '',
-          vehicleInsurance: '',
-          failedTries: 0,
-          cancelled: false,
-          houseType: '',
-          lastName: '',
-          name: '',
-          hasVehicleInSurance: '',
-          wantToGetVehicleInsurance: '',
-          isTruck: '',
-          total: 0,
-          image: '',
-          vehicleType: '',
-          buyingType: '',
-          paypalPaymentId: '',
-          insuranceType: '',
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "2"
-        })
-      })
-    } else if (purchaseOption === "2") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      const stateImage = jsonData.states.find((s) => s.state === data).id + '-' + data +'.webp'
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          state: data,
-          image: stateImage,
-          options: jsonData.states.filter((s) => s.state === data)[0].plates
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "3",
-          state: data,
-          options: jsonData.states.filter((s) => s.state === data)[0].plates
-        })
-      })
-    } else if (purchaseOption === "3") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      const price = data.split(' ')[data.split(' ').length - 1].split('$')[0]
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          details: data,
-          total: parseInt(price)
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "4"
-        })
-      })
-    } else if (purchaseOption === "4") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      const purchasePrice = allPurchases.filter((c) => c.conversation_id === room)[0].total
-      const vehicleTypeFee = ["Truck (+20$ fee)", "Bus (+20$ fee)", "Trailer (+20$ fee)"].includes(data) ? 20 : 0
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          vehicleType: data,
-          total: purchasePrice + vehicleTypeFee,
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "5"
-        })
-      })
-    } else if (purchaseOption === "5") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          name: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "6"
-        })
-      })
-    } else if (purchaseOption === "6") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          lastName: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "7"
-        })
-      })
-    } else if (purchaseOption === "7") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          address: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "8"
-        })
-      })
-    } else if (purchaseOption === "8") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          city: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "9"
-        })
-      })
-    } else if (purchaseOption === "9") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          houseType: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "10"
-        })
-      })
-    } else if (purchaseOption === "10") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          zip: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "11"
-        })
-      })
-    } else if (purchaseOption === "11") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          phone: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "12"
-        })
-      })
-    } else if (purchaseOption === "12") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          vin: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "13"
-        })
-      })
-    } else if (purchaseOption === "13") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          color: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "14"
-        })
-      })
-    } else if (purchaseOption === "14") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          email: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "15"
-        })
-      })
-    } else if (purchaseOption === "15") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      console.log('purchaseID', purchaseID, 'data', data)
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          driverLicense: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "16"
-        })
-      })
-    } else if (purchaseOption === "16") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          hasVehicleInSurance: data
-        }
-      }).then((purchase) => {
-        if (data === "yes") {
-          return res.status(200).json({
-            data: true,
-            currentStep: "18"
-          })
-        } else {
-          return res.status(200).json({
-            data: true,
-            currentStep: "17"
-          })
-        }
-      })
-    } else if (purchaseOption === "17") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          wantToGetVehicleInsurance: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "19",
-          purchaseID: purchaseID
-        })
-      })
-    } else if (purchaseOption === "18") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          vehicleInsurance: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "19",
-          purchaseID: purchaseID
-        })
-      })
-    } else if (purchaseOption === "19") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          total: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "20"
-        })
-      })
-    }
-  } catch (error) {
-    console.log('Error from purchaseFromFormConversation', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/purchase/conversation/:id', async (req, res) => {
-  const { id } = req.params
-  try {
-    if (id) {
-      const purchaseS = await prisma.purchase.findMany()
-      const filteredByConversationID = purchaseS.filter((c) => c.conversation_id === id)
-      if (!filteredByConversationID.length || filteredByConversationID[0].completed) {
-        res.status(200).json({
-          data: false
-        })
-      } else {
-        if (!filteredByConversationID[0].state) {
-          res.status(200).json({
-            data: true,
-            currentStep: "2"
-          })
-        } else if (!filteredByConversationID[0].details) {
-          res.status(200).json({
-            data: true,
-            currentStep: "3",
-            state: filteredByConversationID[0].state,
-            options: jsonData.states.filter((s) => s.state === filteredByConversationID[0].state)[0].plates
-          })
-        } else if (!filteredByConversationID[0].vehicleType) {
-          res.status(200).json({
-            data: true,
-            currentStep: "4"
-          })
-        } else if (!filteredByConversationID[0].name) {
-          res.status(200).json({
-            data: true,
-            currentStep: "5"
-          })
-        } else if (!filteredByConversationID[0].lastName) {
-          res.status(200).json({
-            data: true,
-            currentStep: "6"
-          })
-        } else if (!filteredByConversationID[0].address) {
-          res.status(200).json({
-            data: true,
-            currentStep: "7"
-          })
-        } else if (!filteredByConversationID[0].city) {
-          res.status(200).json({
-            data: true,
-            currentStep: "8"
-          })
-        } else if (!filteredByConversationID[0].houseType) {
-          res.status(200).json({
-            data: true,
-            currentStep: "9"
-          })
-        } else if (!filteredByConversationID[0].zip) {
-          res.status(200).json({
-            data: true,
-            currentStep: "10"
-          })
-        } else if (!filteredByConversationID[0].phone) {
-          res.status(200).json({
-            data: true,
-            currentStep: "11"
-          })
-        } else if (!filteredByConversationID[0].vin) {
-          res.status(200).json({
-            data: true,
-            currentStep: "12"
-          })
-        } else if (!filteredByConversationID[0].color) {
-          res.status(200).json({
-            data: true,
-            currentStep: "13"
-          })
-        } else if (!filteredByConversationID[0].email) {
-          res.status(200).json({
-            data: true,
-            currentStep: "14"
-          })
-        } else if (!filteredByConversationID[0].driverLicense) {
-          res.status(200).json({
-            data: true,
-            currentStep: "15"
-          })
-        } else if (!filteredByConversationID[0].hasVehicleInSurance) {
-          res.status(200).json({
-            data: true,
-            currentStep: "16"
-          })
-        } else if (!filteredByConversationID[0].wantToGetVehicleInsurance) {
-          res.status(200).json({
-            data: true,
-            currentStep: "17"
-          })
-        } else if ((!filteredByConversationID[0].vehicleInsurance && filteredByConversationID[0].hasVehicleInSurance === 'yes') || (filteredByConversationID[0].hasVehicleInSurance === 'no' && filteredByConversationID[0].wantToGetVehicleInsurance === 'yes')) {
-          res.status(200).json({
-            data: true,
-            currentStep: "18"
-          })
-        } else if (!filteredByConversationID[0].completed) {
-          const purchaseID = filteredByConversationID[0].id
-          res.status(200).json({
-            data: true,
-            currentStep: "19",
-            purchaseID: purchaseID
-          })
-        }
-      }
-    } else {
-      return res.status(404).json({ error: 'Id no provided' })
-    }
-  } catch (error) {
-    console.log("Error from purchase conversation", error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get("/auth/token", async (req, res) => {
-  const { userID } = req.cookies
-  try {
-    if (!userID) {
-      const newUser = await prisma.user.create({
-        data: {
-          id: uuidv4()
-        }
-      })
-
-      res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(200).json({
-        data: true,
-        message: 'User fetched successfully',
-        success: true
-      })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userID
-      }
-    })
-
-    if (user) {
-      res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
-    } else {
-      const newUser = await prisma.user.create({
-        data: {
-          id: uuidv4()
-        }
-      })
-
-      res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
-    }
-
-    return res.status(200).json({
-      data: true,
-      message: 'User fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from auth/token', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.get("/cart", async (req, res) => {
-  const { userID } = req.cookies
-  try {
-    const cart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      },
-      include: {
-        products: true
-      }
-    })
-
-    if (!cart) {
-      const createCart = await prisma.shoppingCart.create({
-        data: {
-          userId: userID,
-          total: 0,
-          amount: 0,
-          products: {
-            create: []
-          }
-        }
-      })
-
-      return res.status(200).json({
-        data: createCart,
-        message: 'Cart fetched successfully',
-        success: true
-      })
-    }
-
-    res.status(200).json({
-      data: cart,
-      message: 'Cart fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.post("/cart", async (req, res) => {
-  const { userID } = req.cookies
-  try {
-
-    const findCart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      }
-    })
-
-    if (findCart) {
-      return res.status(400).json({
-        data: findCart,
-        message: 'Cart already exists',
-        success: false
-      })
-    }
-
-    const cart = await prisma.shoppingCart.create({
-      data: {
-        userId: userID,
-        total: 0,
-        amount: 0,
-        products: {
-          create: []
-        }
-      }
-    })
-    res.status(201).json({
-      data: cart,
-      message: 'Cart created successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.put("/cart/product", async (req, res) => {
-  const { product } = req.body
-  const { userID } = req.cookies
-  try {
-    const cart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      },
-      include: {
-        products: true
-      }
-    })
-
-    if (!cart) {
-      return res.status(404).json({ error: 'Cart not found' })
-    }
-
-    const productExists = cart.products.find((p) => p.name === product.name)
-
-    if (cart.products.length && productExists) {
-      if (productExists.description.includes(product.description)) {
-        return res.status(400).json({ error: 'Product already exists in cart' })
-      } else {
-        const productID = productExists.id
-        await prisma.product.update({
-          where: {
-            id: productID
-          },
-          data: {
-            description: product.description,
-            price: product.price,
-          }
-        })
-        await prisma.shoppingCart.update({
-          where: {
-            userId: userID
-          },
-          data: {
-            total: cart.total + product.price - productExists.price,
-          }
-        })
-
-        return res.status(200).json({
-          data: true,
-          message: 'Product updated successfully',
-          success: true
-        })
-      }
-    }
-
-    const updatedCart = await prisma.shoppingCart.update({
-      where: {
-        userId: userID
-      },
-      data: {
-        total: cart.total + product.price,
-        amount: cart.amount + 1,
-        products: {
-          create: {
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            description: product.description,
-            link: product.link,
-          }
-        }
-      },
-      include: {
-        products: true
-      }
-    })
-
-    res.status(200).json({
-      data: updatedCart,
-      message: 'Product added to cart successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart/product', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.delete("/cart/product/:productID", async (req, res) => {
-  const { productID } = req.params
-  const { userID } = req.cookies
-  try {
-    const cart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      },
-      include: {
-        products: true
-      }
-    })
-
-    if (!cart) {
-      return res.status(404).json({ error: 'Cart not found' })
-    }
-
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productID
-      }
-    })
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' })
-    }
-
-    const updatedCart = await prisma.shoppingCart.update({
-      where: {
-        userId: userID
-      },
-      data: {
-        total: cart.total - product.price,
-        amount: cart.amount - 1,
-        products: {
-          delete: {
-            id: productID
-          }
-        }
-      },
-      include: {
-        products: true
-      }
-    })
-
-    res.status(200).json({
-      data: updatedCart,
-      message: 'Product removed from cart successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart/product', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.get('/auth/created', async (req, res) => {
-  const { userID } = req.cookies
-  try {
-    if (!userID) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userID
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    if (user.username && user.email) {
-      return res.status(200).json({
-        data: true,
-        message: 'User fetched successfully',
-        success: true
-      })
-    } else {
-      return res.status(200).json({
-        data: false,
-        message: 'User fetched successfully',
-        success: true
-      })
-    }
-  } catch (error) {
-    console.log('Error from auth/created', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
