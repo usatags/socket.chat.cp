@@ -153,6 +153,8 @@ const createPurchase = async (req, res, next) => {
         insuranceType: insuranceType || '',
         id: uuidv4(), 
         wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+        insruancePrice: 0,
+        insuranceDescription: '',
       }
     })
 
@@ -271,6 +273,8 @@ const pucharseFromConversation = async (req, res, next) => {
           buyingType: '',
           paypalPaymentId: '',
           insuranceType: '',
+          insruancePrice: 0,
+          insuranceDescription: '',
         }
       }).then((purchase) => {
         return res.status(200).json({
