@@ -24,8 +24,8 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-const base = "https://api-m.sandbox.paypal.com";
-// const base = "https://www.paypal.com";
+// const base = "https://api-m.sandbox.paypal.com";
+const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
