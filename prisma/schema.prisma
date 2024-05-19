@@ -78,6 +78,10 @@ model Purchase {
   buyingType String?
   paypalPaymentId String?
   insuranceType String?
+  insuranceDescription String?
+  insurancePrice Int?
+  isInsurance Boolean?
+  vehicleTitle String?
 }
 
 model Purchasevisitor {
@@ -110,6 +114,10 @@ model Purchasevisitor {
   buyingType String?
   paypalPaymentId String?
   insuranceType String?
+  insuranceDescription String?
+  insurancePrice Int?
+  isInsurance Boolean?
+  vehicleTitle String?
   cart ShoppingCart[]
 }
 

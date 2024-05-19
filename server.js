@@ -24,18 +24,18 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-// const base = "https://api-m.sandbox.paypal.com";
-const base = "https://www.paypal.com";
+const base = "https://api-m.sandbox.paypal.com";
+// const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
-  origin: 'https://usatag.us',
+  origin: '*',
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", 'https://usatag.us');
+  res.header("Access-Control-Allow-Origin", '*');
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -460,7 +460,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -654,7 +654,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -817,7 +817,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -935,7 +935,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1053,7 +1053,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1171,7 +1171,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1289,7 +1289,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1409,7 +1409,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1528,7 +1528,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1646,7 +1646,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1764,7 +1764,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -1884,7 +1884,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2002,7 +2002,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2161,7 +2161,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2317,7 +2317,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2435,7 +2435,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2590,7 +2590,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2712,7 +2712,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2834,7 +2834,7 @@ io.on('connection', (socket) => {
 
               const newMessage = await prisma.message.create({
                 data: {
-                  content: `Your request has been cancelled.`,
+                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
                   sender_id: noSender[0].id,
                   conversation_id,
                   content_type: "text/auto/plates/success/cancelled"
@@ -2953,7 +2953,7 @@ io.on('connection', (socket) => {
 
           const newMessage = await prisma.message.create({
             data: {
-              content: `Your request has been cancelled.`,
+              content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
               sender_id: noSender[0].id,
               conversation_id,
               content_type: "text/auto/plates/success/cancelled"
@@ -3545,6 +3545,10 @@ app.get('/purchase/:id', async (req, res) => {
           vehicleType: purchaseConversation.vehicleType,
           insuranceType: purchaseConversation.insuranceType,
           wantToGetVehicleInsurance: purchaseConversation.wantToGetVehicleInsurance,
+          insuranceDescription: purchaseConversation.insuranceDescription || '',
+          insurancePrice: purchaseConversation.insurancePrice || 0,
+          isInsurance: purchaseConversation.isInsurance || false,
+          vehicleTitle: purchaseConversation.vehicleTitle || '',
         }
       })
 
@@ -3585,44 +3589,15 @@ app.post("/createPurchase", async (req, res) => {
     driverLicense,
     insuranceType,
     wantToGetVehicleInsurance,
-    hasVehicleInSurance
+    hasVehicleInSurance,
+    insurancePrice,
+    insuranceDescription,
+    isInsurance,
+    buyingType,
+    vehicleTitle
   } = req.body
 
   try {
-    // const purchase = await prisma.purchasewithoutconversation.create({
-    //   data: {
-    //     vin,
-    //     color,
-    //     email,
-    //     state,
-    //     city,
-    //     houseType,
-    //     zip,
-    //     phone,
-    //     user_id,
-    //     image,
-    //     lastName,
-    //     name,
-    //     isTruck,
-    //     total,
-    //     completed: false,
-    //     options,
-    //     address,
-    //     driverLicense,
-    //     vehicleInsurance: vehicleInsurance || '',
-    //     failedTries: 0,
-    //     cancelled: false,
-    //     hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-    //     paypalPaymentId: '',
-    //     buyingType: 'temporary',
-    //     continuePurchase: false,
-    //     details,
-    //     vehicleType,
-    //     insuranceType: insuranceType || '',
-    //     id: uuidv4(), 
-    //     wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-    //   }
-    // })
     console.log('req.body', req.body)
     const purchase = await prisma.purchasevisitor.create({
       data: {
@@ -3648,13 +3623,17 @@ app.post("/createPurchase", async (req, res) => {
         cancelled: false,
         hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
         paypalPaymentId: '',
-        buyingType: 'temporary',
+        buyingType: buyingType || "temporary",
         continuePurchase: false,
         details,
         vehicleType,
         insuranceType: insuranceType || '',
         id: uuidv4(), 
         wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
+        insuranceDescription,
+        insurancePrice,
+        isInsurance,
+        vehicleTitle: vehicleTitle || ''
       }
     })
 
