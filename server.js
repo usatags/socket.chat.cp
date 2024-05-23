@@ -29,13 +29,15 @@ const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
-  origin: 'https://usatag.us',
+  // origin: 'https://usatag.us',
+  origin: '*',
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", 'https://usatag.us');
+  // res.header("Access-Control-Allow-Origin", 'https://usatag.us');
+  res.header("Access-Control-Allow-Origin", '*');
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -2940,6 +2942,34 @@ io.on('connection', (socket) => {
                 ${sender[0].username} has sent a new message
                 `
           })
+
+          const menuMessage = await prisma.message.create({
+            data: {
+              content: "If you want to purchase another product, please type the number of the product you want to purchase.\n\n1) Temporary License Plates\n2) Temporary Insurance Vehicle\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
+              sender_id: noSender[0].id,
+              conversation_id,
+              content_type: "text/auto/plates/success/menu"
+            },
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  username: true,
+                }
+              }
+            }
+          })
+
+          io.to(conversation_id).emit('message', {
+            data: menuMessage,
+          })
+
+          io.emit(`notification-${noSender[0].id}`, {
+            title: 'New message',
+            body: `
+                ${sender[0].username} has sent a new message
+                `
+          })          
         } else if (content.toLowerCase() === 'no') {
           await prisma.purchase.update({
             where: {
@@ -3418,7 +3448,7 @@ app.get('/room/:roomID/messages', async (req, res) => {
 
       await prisma.message.create({
         data: {
-          content: jsonData.salute,
+          content: jsonData.salute + "\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
           sender_id: adminID,
           conversation_id: roomID,
           content_type: "text"
