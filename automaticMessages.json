@@ -95,8 +95,8 @@
     {
       "id": "16",
       "state": "Maryland",
-      "plates": "1) 90-Days 135$",
-      "options": [1]
+      "plates": "1) 60-Days 95$\n2) 90-Days 135$",
+      "options": [1, 2]
     },
     {
       "id": "17",
