@@ -23,7 +23,7 @@
     {
       "id": "4",
       "state": "California",
-      "plates": "1) 30-Days 55$\n2) 60-Days 95$",
+      "plates": "1) 30-Days 65$\n2) 60-Days 95$",
       "options": [1, 2]
     },
     {
@@ -47,7 +47,7 @@
     {
       "id": "8",
       "state": "Florida",
-      "plates": "1) 10-Days standard temporary plate 30$\n2) 30-Days pre-printed temporary plate 65$\n3) 90-Days temporary employment 145$",
+      "plates": "1) 10-Days standard temporary plate 30$\n2) 30-Days pre-printed temporary plate 65$\n3) 90-Days temporary employment 135$",
       "options": [1, 2, 3]
     },
     {
@@ -215,7 +215,7 @@
     {
       "id": "36",
       "state": "Vermont",
-      "plates": "1) 30-Days intrastate 95$\n2) 60-Days interstate 95$",
+      "plates": "1) 30-Days intrastate 65$\n2) 60-Days interstate 95$",
       "options": [1, 2]
     },
     {
