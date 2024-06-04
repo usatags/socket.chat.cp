@@ -30,14 +30,14 @@ const app = express()
 
 app.use(cors({
   origin: 'https://usatag.us',
-  // origin: '*',
+  origin: '*',
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", 'https://usatag.us');
-  // res.header("Access-Control-Allow-Origin", '*');
+  res.header("Access-Control-Allow-Origin", '*');
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -3745,8 +3745,11 @@ const createOrder = async (cart) => {
           currency_code: "USD",
           value: cart[0].quantity,
         },
-        description: cart[0].description,
+        description: cart[0].description + " -  E-SHIPPING",
         name: 'Order from Usatags',
+        shipping: {
+          method: "E-SHIPPING",
+        }
       },
     ],
   };

@@ -25,6 +25,7 @@ model User {
   conversations Conversation[]
   purchases Purchase[]
   cart ShoppingCart?
+  createdAt DateTime @default(now())
 }
 
 model Message {
@@ -35,6 +36,7 @@ model Message {
   sender_id String
   conversation Conversation @relation(fields: [conversation_id], references: [id])
   conversation_id String
+  createdAt DateTime @default(now())
 }
 
 model Conversation {
@@ -42,6 +44,7 @@ model Conversation {
   members User[]
   messages Message[]
   purchases Purchase[]
+  createdAt DateTime @default(now())
 }
 
 model Purchase {
@@ -82,6 +85,7 @@ model Purchase {
   insurancePrice Int?
   isInsurance Boolean?
   vehicleTitle String?
+  createdAt DateTime @default(now())
 }
 
 model Purchasevisitor {
@@ -119,6 +123,7 @@ model Purchasevisitor {
   isInsurance Boolean?
   vehicleTitle String?
   cart ShoppingCart[]
+  createdAt DateTime @default(now())
 }
 
 model PlateDetailsCodes {
