@@ -449,56 +449,56 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
             // const newMessage = await prisma.message.create({
             //   data: {
@@ -643,60 +643,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid option. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid option. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid option. Please try again. Remember to type the number of the option you want to select.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates"
@@ -806,60 +823,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid option. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid option. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid option. Please try again. Remember to type the number of the option you want to select.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates"
@@ -924,60 +958,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid name. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/name"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid name. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid name. Please try again. Remember that the name should only contain letters and this special characters (. , ' -).`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/name"
@@ -1042,60 +1093,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid last name. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/lastName"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid last name. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid last name. Please try again. Remember that the last name should only contain letters and this special characters (. , ' -).`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/lastName"
@@ -1160,60 +1228,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid address. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/address"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid address. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid address. Please try again. Remember that the address should only contain letters, numbers and this special characters (. , ' -).`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/address"
@@ -1278,60 +1363,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid city. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/city"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid city. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid city. Please try again. Remember that the city should only contain letters.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/city"
@@ -1398,60 +1500,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid house type. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/houseType"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid house type. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid house type. Please try again. Remember to type the number of the option you want to select.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/houseType"
@@ -1517,60 +1635,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid zip code. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/zip"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid zip code. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid zip code. Please try again. Remember that the zip code should only contain numbers and should be 5 digits long.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/zip"
@@ -1635,60 +1770,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid phone number. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/phone"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid phone number. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid phone number. Please try again. Remember that the phone number should only contain numbers and should be 10 digits long.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/phone"
@@ -1753,60 +1905,77 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
+
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid VIN number. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/vin"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
 
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid VIN number. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid VIN number. Please try again. Remember that the VIN number should be 17 characters long.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/vin"
@@ -1873,60 +2042,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid color. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/color"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid color. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid color. Please try again. Remember to type the number of the option you want to select.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/color"
@@ -1991,60 +2176,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid email. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/email"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid email. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid email. Please try again. Remember that the email should be in the correct format.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/email"
@@ -2150,60 +2351,76 @@ io.on('connection', (socket) => {
             }
             return 
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid driver's license. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/driverLicense"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid driver's license. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid driver's license. Please try again. Remember to add a photo or pdf of your driver's license. if you have any issues, please contact us at +1 (956) 696-7960`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/driverLicense"
@@ -2306,60 +2523,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else  {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/insurance"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid input. Please try again. Remember to type 'yes' if you have an insurance for your vehicle or 'no' if you don't have one.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/insurance"
@@ -2424,60 +2657,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid vehicle insurance. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/insurance"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid vehicle insurance. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid vehicle insurance. Please try again. Remember to add a photo or pdf of your vehicle insurance details. if you have any issues, please contact us at +1 (956) 696-7960`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/insurance"
@@ -2579,60 +2828,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
   
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
   
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/insurance"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid input. Please try again. Remember to type 'yes' if you want to get a vehicle insurance with us or 'no' if you don't want to get one.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/insurance"
@@ -2701,60 +2966,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/insuranceDetails"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid input. Please try again. Remember to type the number of the insurance provider you want to use.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/insuranceDetails"
@@ -2823,60 +3104,76 @@ io.on('connection', (socket) => {
                   `
             })
           } else {
-            if (findByConversationID.failedTries >= 3) {
-              await prisma.purchase.update({
-                where: {
-                  id: findByConversationID.id
-                },
-                data: {
-                  cancelled: true,
-                  completed: true
-                }
-              })
+            // if (findByConversationID.failedTries >= 3) {
+            //   await prisma.purchase.update({
+            //     where: {
+            //       id: findByConversationID.id
+            //     },
+            //     data: {
+            //       cancelled: true,
+            //       completed: true
+            //     }
+            //   })
 
-              const newMessage = await prisma.message.create({
-                data: {
-                  content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
-                  sender_id: noSender[0].id,
-                  conversation_id,
-                  content_type: "text/auto/plates/success/cancelled"
-                },
-                include: {
-                  sender: {
-                    select: {
-                      id: true,
-                      username: true,
-                    }
-                  }
-                }
-              })
+            //   const newMessage = await prisma.message.create({
+            //     data: {
+            //       content: `It seems like you failed to provide the required information. Your request has been cancelled. But you can start a new one anytime just by typing the number of the service you want to use.\n\n1) Temporary plates\n2) Insurance\n\n Also you can go to the products page to see the available products by clicking the button below.\n\n<button class="go-to-products">Go to products</button>`,
+            //       sender_id: noSender[0].id,
+            //       conversation_id,
+            //       content_type: "text/auto/plates/success/cancelled"
+            //     },
+            //     include: {
+            //       sender: {
+            //         select: {
+            //           id: true,
+            //           username: true,
+            //         }
+            //       }
+            //     }
+            //   })
 
-              io.to(conversation_id).emit('message', {
-                data: newMessage,
-              })
+            //   io.to(conversation_id).emit('message', {
+            //     data: newMessage,
+            //   })
 
-              io.emit(`notification-${noSender[0].id}`, {
-                title: 'New message',
-                body: `
-                    ${sender[0].username} has sent a new message
-                    `
-              })
+            //   io.emit(`notification-${noSender[0].id}`, {
+            //     title: 'New message',
+            //     body: `
+            //         ${sender[0].username} has sent a new message
+            //         `
+            //   })
 
-              return;
-            }
+            //   return;
+            // }
 
-            await prisma.purchase.update({
-              where: {
-                id: findByConversationID.id
-              },
-              data: {
-                failedTries: findByConversationID.failedTries + 1
-              }
-            })
+            // await prisma.purchase.update({
+            //   where: {
+            //     id: findByConversationID.id
+            //   },
+            //   data: {
+            //     failedTries: findByConversationID.failedTries + 1
+            //   }
+            // })
 
+            // const newMessage = await prisma.message.create({
+            //   data: {
+            //     content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+            //     sender_id: noSender[0].id,
+            //     conversation_id,
+            //     content_type: "text/auto/plates/insuranceDetails"
+            //   },
+            //   include: {
+            //     sender: {
+            //       select: {
+            //         id: true,
+            //         username: true,
+            //       }
+            //     }
+            //   }
+            // })
             const newMessage = await prisma.message.create({
               data: {
-                content: `Invalid input. Please try again. You have ${3 - findByConversationID.failedTries} tries left.`,
+                content: `Invalid input. Please try again. Remember to type the number of the insurance provider you want to use.`,
                 sender_id: noSender[0].id,
                 conversation_id,
                 content_type: "text/auto/plates/insuranceDetails"
@@ -3581,6 +3878,8 @@ app.get('/purchase/:id', async (req, res) => {
           vehicleTitle: purchaseConversation.vehicleTitle || '',
         }
       })
+
+      // console.log('purchaseVisitorConversation', purchaseVisitorConversation)
 
       return res.status(200).json({
         data: purchaseVisitorConversation,
