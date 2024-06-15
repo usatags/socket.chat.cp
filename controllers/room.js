@@ -5,6 +5,7 @@ const jsonData = require('../automaticMessages.json');
 
 const getMessagesFromRoom = async (req, res = response) => {
   const { roomID } = req.params
+  const { isDealers } = req.query
   const splitRoomID = roomID.split('+')
 
   try {
@@ -78,7 +79,7 @@ const getMessagesFromRoom = async (req, res = response) => {
 
       await prisma.message.create({
         data: {
-          content: (process.env.SERVER_TYPE ? jsonData.salute_dealers : jsonData.salute) + "\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
+          content: (isDealers ? jsonData.salute_dealers : jsonData.salute) + "\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
           sender_id: adminID,
           conversation_id: roomID,
           content_type: "text"
