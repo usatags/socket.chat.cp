@@ -31,25 +31,38 @@ const app = express()
 
 app.use(cors({
   // origin: 'https://usatag.us',
-  origin: '*',
+  // origin: '*',
+  origin: [ 'https://usadealerplates.us', 'https://usatag.us' ],
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
+// app.use(function(req, res, next) {
+//   // res.header("Access-Control-Allow-Origin", 'https://usatag.us');
+//   res.header("Access-Control-Allow-Origin", '*');
+//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   next();
+// })
 app.use(function(req, res, next) {
-  // res.header("Access-Control-Allow-Origin", 'https://usatag.us');
-  res.header("Access-Control-Allow-Origin", '*');
+  const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
   next();
-})
+});
 
 const server = Server(app)
 
 const io = socket(server, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    // origin: process.env.CLIENT_URL,
+    origin: [ 'https://usadealerplates.us', 'https://usatag.us'],
     methods: ['GET', 'POST']
   }
 })
