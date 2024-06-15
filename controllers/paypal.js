@@ -1,5 +1,8 @@
 const {response} = require('express');
 
+const base = "https://api-m.sandbox.paypal.com";
+// const base = "https://www.paypal.com";
+
 const generateAccessToken = async () => {
   try {
     console.log(!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET)

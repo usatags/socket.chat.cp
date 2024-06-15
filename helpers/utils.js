@@ -26,7 +26,7 @@ const createNewUser = async ({
 }
 
 const findUserByEmail = async (email) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma?.user.findUnique({
     where: {
       email
     }
@@ -35,7 +35,7 @@ const findUserByEmail = async (email) => {
 }
 
 const findUserByID = async (id) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma?.user.findUnique({
     where: {
       id
     }
@@ -44,7 +44,7 @@ const findUserByID = async (id) => {
 }
 
 const findRoomByID = async (id) => {
-  const room = await prisma.conversation.findUnique({
+  const room = await prisma?.conversation.findUnique({
     where: {
       id
     }
@@ -53,7 +53,7 @@ const findRoomByID = async (id) => {
 }
 
 const findOtherUserOnConversation = async (conversationID, userID) => {
-  const conversation = await prisma.conversation.findUnique({
+  const conversation = await prisma?.conversation.findUnique({
     where: {
       id: conversationID
     },

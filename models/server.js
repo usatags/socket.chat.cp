@@ -17,7 +17,7 @@ class Server {
     this.io = socket(this.server, {
       cors: {
         // origin: process.env.CLIENT_URL,
-        origin: [ 'https://usadealerplates.us', 'https://usatag.us' ],
+        origin: [ 'https://usadealerplates.us', 'https://usatag.us', "http://localhost:5173"],
         methods: ['GET', 'POST']
       }
     });
@@ -25,13 +25,13 @@ class Server {
 
   middlewares() {
     this.app.use(cors({
-      origin: [ 'https://usadealerplates.us', 'https://usatag.us' ],
+      origin: [ 'https://usadealerplates.us', 'https://usatag.us', "http://localhost:5173" ],
       credentials: true
     }));
     this.app.use(express.json());
     this.app.use(cookieParser());
     this.app.use(function(req, res, next) {
-      const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us'];
+      const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us', "http://localhost:5173"];
       const origin = req.headers.origin;
       if (allowedOrigins.includes(origin)) {
         res.header("Access-Control-Allow-Origin", origin);
