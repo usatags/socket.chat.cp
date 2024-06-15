@@ -12,6 +12,7 @@ const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
 const jsonData = require('./automaticMessages.json')
 const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
 
 dotenv.config()
 const port = process.env.PORT || 3000
@@ -24,20 +25,20 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-// const base = "https://api-m.sandbox.paypal.com";
-const base = "https://www.paypal.com";
+const base = "https://api-m.sandbox.paypal.com";
+// const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
-  origin: 'https://usatag.us',
-  // origin: '*',
+  // origin: 'https://usatag.us',
+  origin: '*',
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", 'https://usatag.us');
-  // res.header("Access-Control-Allow-Origin", '*');
+  // res.header("Access-Control-Allow-Origin", 'https://usatag.us');
+  res.header("Access-Control-Allow-Origin", '*');
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -5181,6 +5182,88 @@ app.get('/auth/created', async (req, res) => {
     }
   } catch (error) {
     console.log('Error from auth/created', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/restore/password", async (req, res) => {
+  const { email } = req.body
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const token = jwt.sign({ email, name: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' })
+
+    return res.status(200).json({
+      data: token,
+      message: 'Token generated successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from restore/password', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/restore/check", async (req, res) => {
+  const {token} = req.body
+  try {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(400).json({ error: 'Invalid token' })
+      }
+
+      return res.status(200).json({
+        data: decoded,
+        message: 'Token verified successfully',
+        success: true
+      })
+    })
+  } catch (error) {
+    console.log('Error from restore/check', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/user/update", async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+    await prisma.user.update({
+      where: {
+        email
+      },
+      data: {
+        password: hashedPassword
+      }
+    })
+
+    return res.status(200).json({
+      data: true,
+      message: 'User updated successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from user/update', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
