@@ -32,7 +32,7 @@ const app = express()
 app.use(cors({
   // origin: 'https://usatag.us',
   // origin: '*',
-  origin: [ 'https://usadealerplates.us', 'https://usatag.us' ],
+  origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/' ],
   origin: "*",
   credentials: true
 }))
@@ -47,7 +47,7 @@ app.use(cookieParser())
 //   next();
 // })
 app.use(function(req, res, next) {
-  const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us'];
+  const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/'];
   // const allowedOrigins =  "*";
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -65,7 +65,7 @@ const io = socket(server, {
   cors: {
     // origin: process.env.CLIENT_URL,
     // origin: [ 'https://usadealerplates.us', 'https://usatag.us'],
-    origin: "*",
+    origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/' ],
     methods: ['GET', 'POST']
   }
 })
