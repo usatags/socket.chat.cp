@@ -25,14 +25,15 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-const base = "https://api-m.sandbox.paypal.com";
-// const base = "https://www.paypal.com";
+// const base = "https://api-m.sandbox.paypal.com";
+const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
   // origin: 'https://usatag.us',
   // origin: '*',
   origin: [ 'https://usadealerplates.us', 'https://usatag.us' ],
+  origin: "*",
   credentials: true
 }))
 app.use(express.json())
@@ -47,6 +48,7 @@ app.use(cookieParser())
 // })
 app.use(function(req, res, next) {
   const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us'];
+  // const allowedOrigins =  "*";
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
@@ -62,7 +64,8 @@ const server = Server(app)
 const io = socket(server, {
   cors: {
     // origin: process.env.CLIENT_URL,
-    origin: [ 'https://usadealerplates.us', 'https://usatag.us'],
+    // origin: [ 'https://usadealerplates.us', 'https://usatag.us'],
+    origin: "*",
     methods: ['GET', 'POST']
   }
 })
