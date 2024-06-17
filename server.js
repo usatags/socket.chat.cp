@@ -30,22 +30,12 @@ const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
-  // origin: 'https://usatag.us',
-  // origin: '*',
   origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/' ],
-  origin: "*",
+  // origin: "*",
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
-// app.use(function(req, res, next) {
-//   // res.header("Access-Control-Allow-Origin", 'https://usatag.us');
-//   res.header("Access-Control-Allow-Origin", '*');
-//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept", "Authorization");
-//   res.header("Access-Control-Allow-Credentials", "true");
-//   next();
-// })
 app.use(function(req, res, next) {
   const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/'];
   // const allowedOrigins =  "*";
@@ -63,9 +53,8 @@ const server = Server(app)
 
 const io = socket(server, {
   cors: {
-    // origin: process.env.CLIENT_URL,
-    // origin: [ 'https://usadealerplates.us', 'https://usatag.us'],
     origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/' ],
+    // origin: "*",
     methods: ['GET', 'POST']
   }
 })
@@ -5280,6 +5269,160 @@ app.post("/user/update", async (req, res) => {
     })
   } catch (error) {
     console.log('Error from user/update', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/codes/login", async (req, res) => {
+  const { email, password } = req.body
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password)
+
+    if (!validPassword) {
+      return res.status(400).json({ error: 'Invalid password' })
+    }
+
+    const token = jwt.sign({ email, name: user.username }, process.env.JWT_SECRET, { expiresIn: '1d' })
+
+    return res.status(200).json({
+      data: token,
+      message: 'User logged in successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from codes/login', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/codes/verify", async (req, res) => {
+  const { token } = req.body
+  try {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(200).json({
+          data: false,
+          message: 'Invalid token',
+          success: false
+        })
+      }
+
+      return res.status(200).json({
+        data: true,
+        message: 'Token verified successfully',
+        success: true
+      })
+    })
+  } catch (error) {
+    console.log('Error from codes/verify', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+});
+
+app.post("/codes/list" , async (req, res) => {
+  const { token } = req.body
+  try {
+    const validToken = jwt.verify(token, process.env.JWT_SECRET)
+
+    if (!validToken) {
+      return res.status(400).json({ error: 'Invalid token' })
+    }
+
+    const codes = await prisma.plateDetailsCodes.findMany()
+
+    return res.status(200).json({
+      data: codes,
+      message: 'Codes fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from codes/list', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/codes/delete", async (req, res) => {
+  const { token, id } = req.body
+  try {
+    const validToken = jwt.verify(token, process.env.JWT_SECRET)
+
+    if (!validToken) {
+      return res.status(400).json({ error: 'Invalid token' })
+    }
+
+    const code = await prisma.plateDetailsCodes.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!code) {
+      return res.status(404).json({ error: 'Code not found' })
+    }
+
+    await prisma.plateDetailsCodes.delete({
+      where: {
+        id
+      }
+    })
+
+    return res.status(200).json({
+      data: true,
+      message: 'Code deleted successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from codes/delete', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/codes/update", async (req, res) => {
+  const { token, id, data } = req.body
+  console.log('data', data)
+  try {
+    const validToken = jwt.verify(token, process.env.JWT_SECRET)
+
+    if (!validToken) {
+      return res.status(400).json({ error: 'Invalid token' })
+    }
+
+    const code = await prisma.plateDetailsCodes.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!code) {
+      return res.status(404).json({ error: 'Code not found' })
+    }
+
+    await prisma.plateDetailsCodes.update({
+      where: {
+        id
+      },
+      data: {
+        ...data,
+      }
+    })
+
+    return res.status(200).json({
+      data: true,
+      message: 'Code updated successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from codes/update', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
