@@ -126,7 +126,7 @@ const findOtherUserOnConversation = async (conversationID, userID) => {
 }
 
 // const lastAutoMessages = []
-const regexForVIN = /^[a-zA-Z0-9]{9}[a-zA-Z0-9-]{2}[0-9]{6}$/
+const regexForVIN = /^[a-zA-Z0-9]{17}$/;
 const regexForEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
 const regexForName = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
 const regexForAddress = /^[a-zA-Z0-9\s,.'-]+$/
@@ -4236,6 +4236,7 @@ app.post('/createPlateCode', async (req, res) => {
       vehicleMake,
       vehicleModel,
       vehicleBodyStyle,
+      tagType,
       vehicleColor,
       vehicleGVW,
       dealerLicenseNumber,
@@ -4332,6 +4333,7 @@ app.post('/createPlateCode', async (req, res) => {
         dealerLicenseNumber,
         dealerName,
         dealerAddress,
+        tagType,
         dealerPhone,
         dealerType,
         hasBarcode: true,
