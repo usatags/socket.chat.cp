@@ -30,14 +30,14 @@ const base = "https://www.paypal.com";
 const app = express()
 
 app.use(cors({
-  origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/' ],
+  origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com' ],
   // origin: "*",
   credentials: true
 }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(function(req, res, next) {
-  const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/'];
+  const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com'];
   // const allowedOrigins =  "*";
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -53,7 +53,7 @@ const server = Server(app)
 
 const io = socket(server, {
   cors: {
-    origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com/' ],
+    origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com' ],
     // origin: "*",
     methods: ['GET', 'POST']
   }
