@@ -4057,6 +4057,12 @@ const createOrder = async (cart) => {
         }
       },
     ],
+    payment_source: {
+      paypal: {
+        brand_name: "Usatags",
+        shipping_preference: "E_SHIPPING"
+      }
+    }
   };
 
   const response = await fetch(url, {
