@@ -34,7 +34,10 @@ app.use(cors({
   // origin: "*",
   credentials: true
 }))
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+
 app.use(cookieParser())
 app.use(function(req, res, next) {
   const allowedOrigins = ['https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com'];
@@ -3933,7 +3936,7 @@ app.post("/createPurchase", async (req, res) => {
   } = req.body
 
   try {
-    console.log('req.body', req.body)
+    // console.log('req.body', req.body)
     const purchase = await prisma.purchasevisitor.create({
       data: {
         vin,
