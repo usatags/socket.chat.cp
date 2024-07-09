@@ -154,6 +154,8 @@ model PlateDetailsCodes {
   tagType String?
   isInsurance Boolean?
   insuranceProvider String?
+  agentName String?
+  policyNumber String?
 }
 
 model Product {
