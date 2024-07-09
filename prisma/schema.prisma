@@ -152,6 +152,8 @@ model PlateDetailsCodes {
   hasQRCode Boolean?
   State String?
   tagType String?
+  isInsurance Boolean?
+  insuranceProvider String?
 }
 
 model Product {

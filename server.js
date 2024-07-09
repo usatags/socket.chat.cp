@@ -4255,7 +4255,9 @@ app.post('/createPlateCode', async (req, res) => {
       dealerType,
       hasBarcode,
       hasQRCode,
-      state
+      state,
+      insuranceProvider,
+      isInsurance
      } = req.body
 
     // if (!tagName && !status && !tagIssueDate && !tagExpirationDate && !purchasedOrLeased && !customerType && !transferPlate && !vin && !vehicleYear && !vehicleMake && !vehicleModel && !vehicleBodyStyle && !vehicleColor && !vehicleGVW && !dealerLicenseNumber && !dealerName && !dealerAddress && !dealerPhone && !dealerType) {
@@ -4268,59 +4270,59 @@ app.post('/createPlateCode', async (req, res) => {
       }
     })
 
-    if (findPlateByTag.length && findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
-      return res.status(400).json({ error: 'Plate code already exists' })
-    }
+    // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
+    //   return res.status(400).json({ error: 'Plate code already exists' })
+    // }
 
-    if (findPlateByTag.length && findPlateByTag[0].hasBarcode && hasBarcode) {
-      return res.status(400).json({ error: 'Plate code already has barcode' })
-    }
+    // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && hasBarcode) {
+    //   return res.status(400).json({ error: 'Plate code already has barcode' })
+    // }
 
-    if (findPlateByTag.length && findPlateByTag[0].hasQRCode && hasQRCode) {
-      return res.status(400).json({ error: 'Plate code already has QR code' })
-    }
+    // if (findPlateByTag.length && findPlateByTag[0].hasQRCode && hasQRCode) {
+    //   return res.status(400).json({ error: 'Plate code already has QR code' })
+    // }
 
-    if (findPlateByTag.length && findPlateByTag[0].hasBarcode && !findPlateByTag[0].hasQRCode) {
-      await prisma.plateDetailsCodes.update({
-        where: {
-          id: findPlateByTag[0].id
-        },
-        data: {
-          hasQRCode: true
-        }
-      })
+    // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && !findPlateByTag[0].hasQRCode) {
+    //   await prisma.plateDetailsCodes.update({
+    //     where: {
+    //       id: findPlateByTag[0].id
+    //     },
+    //     data: {
+    //       hasQRCode: true
+    //     }
+    //   })
 
-      return res.status(200).json({
-        data: {
-          ...findPlateByTag[0],
-          hasQRCode: true,
-          hasBarcode: false
-        },
-        message: 'Plate code created successfully',
-        success: true
-      })
-    }
+    //   return res.status(200).json({
+    //     data: {
+    //       ...findPlateByTag[0],
+    //       hasQRCode: true,
+    //       hasBarcode: false
+    //     },
+    //     message: 'Plate code created successfully',
+    //     success: true
+    //   })
+    // }
 
-    if (findPlateByTag.length && !findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
-      await prisma.plateDetailsCodes.update({
-        where: {
-          id: findPlateByTag[0].id
-        },
-        data: {
-          hasBarcode: true
-        }
-      })
+    // if (findPlateByTag.length && !findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
+    //   await prisma.plateDetailsCodes.update({
+    //     where: {
+    //       id: findPlateByTag[0].id
+    //     },
+    //     data: {
+    //       hasBarcode: true
+    //     }
+    //   })
 
-      return res.status(200).json({
-        data: {
-          ...findPlateByTag[0],
-          hasQRCode: false,
-          hasBarcode: true
-        },
-        message: 'Plate code created successfully',
-        success: true
-      })
-    }
+    //   return res.status(200).json({
+    //     data: {
+    //       ...findPlateByTag[0],
+    //       hasQRCode: false,
+    //       hasBarcode: true
+    //     },
+    //     message: 'Plate code created successfully',
+    //     success: true
+    //   })
+    // }
 
     const plateCode = await prisma.plateDetailsCodes.create({
       data: {
@@ -4347,7 +4349,9 @@ app.post('/createPlateCode', async (req, res) => {
         dealerType,
         hasBarcode: true,
         hasQRCode: true,
-        State: state
+        State: state,
+        insuranceProvider: insuranceProvider || '',
+        isInsurance: isInsurance || false
       }
     })
 
