@@ -3604,7 +3604,7 @@ app.post('/login', async (req, res) => {
       })
     }
   
-    res.cookie('userID', usernameTaken.id, { httpOnly: true, sameSite: 'none', secure: true })
+    // res.cookie('userID', usernameTaken.id, { httpOnly: true, sameSite: 'none', secure: true })
     res.status(200).json({
       data: usernameTaken,
       message: 'User logged in successfully',
@@ -3619,7 +3619,7 @@ app.post('/login', async (req, res) => {
 app.post('/register', async (req, res) => {
   try {
     const body = req.body
-    const { userID } = req.cookies
+    const { userID } = req.cookies || req.body
     const { username, email, password, phone_number, image } = body
 
     if (!username || !email || !password || !phone_number || !image) {
@@ -3629,7 +3629,7 @@ app.post('/register', async (req, res) => {
     const userExists = await findUserByEmail(email)
 
     if (userExists) {
-      res.cookie('userID', userExists.id, { httpOnly: true, sameSite: 'none', secure: true })
+      // res.cookie('userID', userExists.id, { httpOnly: true, sameSite: 'none', secure: true })
       return res.status(201).json({
         data: userExists,
         message: 'User already exists',
@@ -3651,7 +3651,7 @@ app.post('/register', async (req, res) => {
         }
       })
 
-      res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
+      // res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
       return res.status(201).json({
         data: user,
         message: 'User created successfully',
@@ -3667,7 +3667,7 @@ app.post('/register', async (req, res) => {
       image
     })
 
-    res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
+    // res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
     res.status(201).json({
       data: user,
       message: 'User created successfully',
@@ -4916,7 +4916,7 @@ app.get('/purchase/conversation/:id', async (req, res) => {
 })
 
 app.get("/auth/token", async (req, res) => {
-  const { userID } = req.cookies
+  const { userID } = req.cookies || req.body
   try {
     if (!userID) {
       const newUser = await prisma.user.create({
@@ -4925,7 +4925,7 @@ app.get("/auth/token", async (req, res) => {
         }
       })
 
-      res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
+      // res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
       return res.status(200).json({
         data: true,
         message: 'User fetched successfully',
@@ -4940,7 +4940,12 @@ app.get("/auth/token", async (req, res) => {
     })
 
     if (user) {
-      res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
+      // res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
+      return res.status(200).json({
+        data: true,
+        message: 'User fetched successfully',
+        success: true
+      })
     } else {
       const newUser = await prisma.user.create({
         data: {
@@ -4948,7 +4953,7 @@ app.get("/auth/token", async (req, res) => {
         }
       })
 
-      res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
+      // res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
     }
 
     return res.status(200).json({
@@ -4963,7 +4968,7 @@ app.get("/auth/token", async (req, res) => {
 });
 
 app.get("/cart", async (req, res) => {
-  const { userID } = req.cookies
+  const { userID } = req.cookies || req.body
   try {
     const cart = await prisma.shoppingCart.findUnique({
       where: {
@@ -5005,7 +5010,7 @@ app.get("/cart", async (req, res) => {
 });
 
 app.post("/cart", async (req, res) => {
-  const { userID } = req.cookies
+  const { userID } = req.cookies || req.body
   try {
 
     const findCart = await prisma.shoppingCart.findUnique({
@@ -5045,7 +5050,7 @@ app.post("/cart", async (req, res) => {
 
 app.put("/cart/product", async (req, res) => {
   const { product } = req.body
-  const { userID } = req.cookies
+  const { userID } = req.cookies || req.body
   try {
     const cart = await prisma.shoppingCart.findUnique({
       where: {
@@ -5128,7 +5133,7 @@ app.put("/cart/product", async (req, res) => {
 
 app.delete("/cart/product/:productID", async (req, res) => {
   const { productID } = req.params
-  const { userID } = req.cookies
+  const { userID } = req.cookies || req.body
   try {
     const cart = await prisma.shoppingCart.findUnique({
       where: {
@@ -5183,7 +5188,7 @@ app.delete("/cart/product/:productID", async (req, res) => {
 });
 
 app.get('/auth/created', async (req, res) => {
-  const { userID } = req.cookies
+  const { userID } = req.cookies || req.body
   try {
     if (!userID) {
       return res.status(404).json({ error: 'User not found' })
