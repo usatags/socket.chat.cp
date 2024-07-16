@@ -4201,7 +4201,9 @@ app.post('/createPlateCode', async (req, res) => {
       insuranceProvider,
       isInsurance,
       agentName,
-      policyNumber
+      policyNumber,
+      nameOwner,
+      address
      } = req.body
 
     // if (!tagName && !status && !tagIssueDate && !tagExpirationDate && !purchasedOrLeased && !customerType && !transferPlate && !vin && !vehicleYear && !vehicleMake && !vehicleModel && !vehicleBodyStyle && !vehicleColor && !vehicleGVW && !dealerLicenseNumber && !dealerName && !dealerAddress && !dealerPhone && !dealerType) {
@@ -4297,7 +4299,9 @@ app.post('/createPlateCode', async (req, res) => {
         insuranceProvider: insuranceProvider || '',
         isInsurance: isInsurance || false,
         agentName,
-        policyNumber
+        policyNumber,
+        nameOwner,
+        address
       }
     })
 

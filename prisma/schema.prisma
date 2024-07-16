@@ -107,4 +107,6 @@ model PlateDetailsCodes {
   insuranceProvider String?
   agentName String?
   policyNumber String?
+  nameOwner String?
+  address String?
 }
