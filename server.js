@@ -3831,7 +3831,7 @@ app.get('/purchases', async (req, res) => {
 app.get('/purchase/:id', async (req, res) => {
   const { id } = req.params
   try {
-    const purchase = await prisma.purchasevisitor.findUnique({
+    const purchase = await prisma.purchase.findUnique({
       where: {
         id
       }
@@ -3844,56 +3844,8 @@ app.get('/purchase/:id', async (req, res) => {
         success: true
       })
     } else {
-      const purchaseConversation = await prisma.purchase.findUnique({
-        where: {
-          id
-        }
-      })
-
-      const purchaseVisitorConversation = await prisma.purchasevisitor.create({
-        data: {
-          id: purchaseConversation.id,
-          vin: purchaseConversation.vin,
-          color: purchaseConversation.color,
-          email: purchaseConversation.email,
-          state: purchaseConversation.state,
-          city: purchaseConversation.city,
-          houseType: purchaseConversation.houseType,
-          zip: purchaseConversation.zip,
-          phone: purchaseConversation.phone,
-          image: purchaseConversation.image,
-          lastName: purchaseConversation.lastName,
-          name: purchaseConversation.name,
-          isTruck: purchaseConversation.isTruck,
-          total: purchaseConversation.total,
-          completed: purchaseConversation.completed,
-          options: purchaseConversation.options,
-          address: purchaseConversation.address,
-          buyingType: purchaseConversation.buyingType,
-          driverLicense: purchaseConversation.driverLicense,
-          vehicleInsurance: purchaseConversation.vehicleInsurance,
-          failedTries: purchaseConversation.failedTries,
-          cancelled: purchaseConversation.cancelled,
-          hasVehicleInSurance: purchaseConversation.hasVehicleInSurance,
-          paypalPaymentId: purchaseConversation.paypalPaymentId,
-          continuePurchase: purchaseConversation.continuePurchase,
-          details: purchaseConversation.details,
-          vehicleType: purchaseConversation.vehicleType,
-          insuranceType: purchaseConversation.insuranceType,
-          wantToGetVehicleInsurance: purchaseConversation.wantToGetVehicleInsurance,
-          insuranceDescription: purchaseConversation.insuranceDescription || '',
-          insurancePrice: purchaseConversation.insurancePrice || 0,
-          isInsurance: purchaseConversation.isInsurance || false,
-          vehicleTitle: purchaseConversation.vehicleTitle || '',
-        }
-      })
-
-      // console.log('purchaseVisitorConversation', purchaseVisitorConversation)
-
-      return res.status(200).json({
-        data: purchaseVisitorConversation,
-        message: 'Purchase fetched successfully',
-        success: true
+      return res.status(404).json({
+        error: 'Purchase not found'
       })
     }
   } catch (error) {
@@ -3904,74 +3856,64 @@ app.get('/purchase/:id', async (req, res) => {
 
 app.post("/createPurchase", async (req, res) => {
   const {
+    purchaseType,
     vin,
     color,
     email,
     state,
+    name,
+    lastName,
+    address,
     city,
     houseType,
     zip,
     phone,
-    conversation_id,
-    user_id,
-    image,
-    lastName,
-    name,
-    isTruck,
-    total,
-    vehicleType,
-    details,
-    options,
-    address,
-    vehicleInsurance,
     driverLicense,
-    insuranceType,
-    wantToGetVehicleInsurance,
-    hasVehicleInSurance,
-    insurancePrice,
-    insuranceDescription,
+    details,
+    paypalPaymentId,
+    hasFee,
     isInsurance,
-    buyingType,
-    vehicleTitle
+    total,
+    optionSelectedPlate,
+    optionSelectedInsurance,
+    insurancePrice,
+    insuranceProvider,
+    vehicleInsurance,
+    image,
+    vehicleType,
   } = req.body
+
+  console.log('req.body', req.body)
 
   try {
     // console.log('req.body', req.body)
-    const purchase = await prisma.purchasevisitor.create({
+    const purchase = await prisma.purchase.create({
       data: {
+        purchaseType: purchaseType || "plate",
         vin,
         color,
         email,
         state,
+        name,
+        lastName,
+        address,
         city,
         houseType,
         zip,
         phone,
-        image,
-        lastName,
-        name,
-        isTruck,
-        total,
-        completed: false,
-        options,
-        address,
         driverLicense,
-        vehicleInsurance: vehicleInsurance || '',
-        failedTries: 0,
-        cancelled: false,
-        hasVehicleInSurance: vehicleInsurance === 'true' ? 'true' : hasVehicleInSurance,
-        paypalPaymentId: '',
-        buyingType: buyingType || "temporary",
-        continuePurchase: false,
         details,
-        vehicleType,
-        insuranceType: insuranceType || '',
-        id: uuidv4(), 
-        wantToGetVehicleInsurance: vehicleInsurance === 'false' ? 'false' : wantToGetVehicleInsurance,
-        insuranceDescription,
-        insurancePrice,
+        paypalPaymentId,
+        hasFee,
         isInsurance,
-        vehicleTitle: vehicleTitle || ''
+        total,
+        optionSelectedPlate,
+        optionSelectedInsurance,
+        insurancePrice,
+        insuranceProvider,
+        image,
+        vehicleInsurance,
+        vehicleType
       }
     })
 
@@ -4195,7 +4137,7 @@ app.post('/completePurchase', async (req, res) => {
 app.post('/updatePurchase', async (req, res) => {
   try {
     const { purchaseID, paypalPaymentId } = req.body
-    const purchase = await prisma.purchasevisitor.findUnique({
+    const purchase = await prisma.purchase.findUnique({
       where: {
         id: purchaseID
       },
@@ -4203,13 +4145,13 @@ app.post('/updatePurchase', async (req, res) => {
     
 
     if (purchase) {
-    await prisma.purchasevisitor.update({
+    await prisma.purchase.update({
       where: {
         id: purchaseID
       },
       data: {
         paypalPaymentId,
-        completed: true,
+        // completed: true,
       }
     })
 
@@ -5458,6 +5400,35 @@ app.post("/codes/update", async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
+
+// const { parse } = require("csv-parse");
+// const fs = require('fs')
+// let count =0
+// fs.createReadStream('../../Downloads/Usert.csv')
+// .pipe(parse({ delimiter: ",", from_line: 2 }))
+//   .on("data", async function (row) {
+
+//     await  prisma.user.create({
+//       data: {
+//         id: row[0],
+//         email: row[2],
+//         username: row[1],
+//         password: row[3],
+//         image: row[4],
+//         phone_number: row[5],
+//       }
+//     }).then((user) => {
+//       count++
+//       console.log('user', user.id)
+    
+//     })
+//   })
+//   .on("end", function () {
+//     console.log("finished");
+//   })
+//   .on("error", function (error) {
+//     console.log(error.message);
+//   });
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)

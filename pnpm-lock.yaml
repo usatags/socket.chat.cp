@@ -23,6 +23,15 @@ dependencies:
   cors:
     specifier: ^2.8.5
     version: 2.8.5
+  csv:
+    specifier: ^6.3.9
+    version: 6.3.9
+  csv-parse:
+    specifier: ^5.5.6
+    version: 5.5.6
+  csv-parser:
+    specifier: ^3.0.0
+    version: 3.0.0
   dotenv:
     specifier: ^16.4.1
     version: 16.4.1
@@ -510,6 +519,36 @@ packages:
 
   /csscolorparser@1.0.3:
     resolution: {integrity: sha512-umPSgYwZkdFoUrH5hIq5kf0wPSXiro51nPw0j2K/c83KflkPSTBGMz6NJvMB+07VlL0y7VPo6QJcDjcgKTTm3w==}
+    dev: false
+
+  /csv-generate@4.4.1:
+    resolution: {integrity: sha512-O/einO0v4zPmXaOV+sYqGa02VkST4GP5GLpWBNHEouIU7pF3kpGf3D0kCCvX82ydIY4EKkOK+R8b1BYsRXravg==}
+    dev: false
+
+  /csv-parse@5.5.6:
+    resolution: {integrity: sha512-uNpm30m/AGSkLxxy7d9yRXpJQFrZzVWLFBkS+6ngPcZkw/5k3L/jjFuj7tVnEpRn+QgmiXr21nDlhCiUK4ij2A==}
+    dev: false
+
+  /csv-parser@3.0.0:
+    resolution: {integrity: sha512-s6OYSXAK3IdKqYO33y09jhypG/bSDHPuyCme/IdEHfWpLf/jKcpitVFyOC6UemgGk8v7Q5u2XE0vvwmanxhGlQ==}
+    engines: {node: '>= 10'}
+    hasBin: true
+    dependencies:
+      minimist: 1.2.8
+    dev: false
+
+  /csv-stringify@6.5.0:
+    resolution: {integrity: sha512-edlXFVKcUx7r8Vx5zQucsuMg4wb/xT6qyz+Sr1vnLrdXqlLD1+UKyWNyZ9zn6mUW1ewmGxrpVwAcChGF0HQ/2Q==}
+    dev: false
+
+  /csv@6.3.9:
+    resolution: {integrity: sha512-eiN+Qu8NwSLxZYia6WzB8xlX/rAQ/8EgK5A4dIF7Bz96mzcr5dW1jlcNmjG0QWySWKfPdCerH3RQ96ZqqsE8cA==}
+    engines: {node: '>= 0.1.90'}
+    dependencies:
+      csv-generate: 4.4.1
+      csv-parse: 5.5.6
+      csv-stringify: 6.5.0
+      stream-transform: 3.3.2
     dev: false
 
   /data-uri-to-buffer@4.0.1:
@@ -1064,6 +1103,10 @@ packages:
       brace-expansion: 1.1.11
     dev: false
 
+  /minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+    dev: false
+
   /minipass@3.3.6:
     resolution: {integrity: sha512-DxiNidxSEK+tHG6zOIklvNOwm3hvCrbUrdtzY74U6HKTJxvIDfOUL5W5P2Ghd3DTkhhKPYGqeNUIh5qcM4YBfw==}
     engines: {node: '>=8'}
@@ -1427,6 +1470,10 @@ packages:
   /statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
+    dev: false
+
+  /stream-transform@3.3.2:
+    resolution: {integrity: sha512-v64PUnPy9Qw94NGuaEMo+9RHQe4jTBYf+NkTtqkCgeuiNo8NlL0LtLR7fkKWNVFtp3RhIm5Dlxkgm5uz7TDimQ==}
     dev: false
 
   /string-width@4.2.3:

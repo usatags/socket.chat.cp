@@ -1,0 +1,180 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id String @id @default(uuid())
+  username String?
+  email String? @unique
+  password String?
+  image String?
+  phone_number String?
+  socketId String?
+  active Boolean? @default(false)
+  admin Boolean? @default(false)
+  messages Message[]
+  conversations Conversation[]
+  purchases Purchase[]
+  cart ShoppingCart?
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id String @id @default(uuid())
+  content String // text, image, file
+  content_type String
+  sender User @relation(fields: [sender_id], references: [id])
+  sender_id String
+  conversation Conversation @relation(fields: [conversation_id], references: [id])
+  conversation_id String
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id String @id @default(uuid())
+  members User[]
+  messages Message[]
+  purchases Purchase[]
+  createdAt DateTime @default(now())
+}
+
+model Purchase {
+  id String @id @default(uuid())
+  conversation_id String?
+  conversation Conversation? @relation(fields: [conversation_id], references: [id])
+  vin String?
+  color String?
+  email String?
+  state String?
+  name String?
+  lastName String?
+  address String?
+  city String?
+  houseType String?
+  zip String?
+  phone String?
+  driverLicense String?
+  hasVehicleInSurance String?
+  wantToGetVehicleInsurance String?
+  vehicleInsurance String?
+  details String?
+  isTruck String?
+  total Int? @default(0)
+  continuePurchase Boolean?
+  completed Boolean? @default(false)
+  user User @relation(fields: [user_id], references: [id])
+  user_id String
+  options String?
+  cancelled Boolean? @default(false)
+  failedTries Int? @default(0)
+  image String?
+  vehicleType String?
+  buyingType String?
+  paypalPaymentId String?
+  insuranceType String?
+  insuranceDescription String?
+  insurancePrice Int?
+  isInsurance Boolean?
+  vehicleTitle String?
+  createdAt DateTime @default(now())
+}
+
+model Purchasevisitor {
+  id String @id @default(uuid())
+  vin String?
+  color String?
+  email String?
+  state String?
+  name String?
+  lastName String?
+  address String?
+  city String?
+  houseType String?
+  zip String?
+  phone String?
+  driverLicense String?
+  hasVehicleInSurance String?
+  wantToGetVehicleInsurance String?
+  vehicleInsurance String?
+  details String?
+  isTruck String?
+  total Int? @default(0)
+  continuePurchase Boolean?
+  completed Boolean? @default(false)
+  options String?
+  cancelled Boolean? @default(false)
+  failedTries Int? @default(0)
+  image String?
+  vehicleType String?
+  buyingType String?
+  paypalPaymentId String?
+  insuranceType String?
+  insuranceDescription String?
+  insurancePrice Int?
+  isInsurance Boolean?
+  vehicleTitle String?
+  cart ShoppingCart[]
+  createdAt DateTime @default(now())
+}
+
+model PlateDetailsCodes {
+  id String @id @default(uuid())
+  tagName String?
+  status String?
+  tagIssueDate String?
+  tagExpirationDate String?
+  purchasedOrLeased String?
+  customerType String?
+  transferPlate String?
+  vin String?
+  vehicleYear String?
+  vehicleMake String?
+  vehicleModel String?
+  vehicleBodyStyle String?
+  vehicleColor String?
+  vehicleGVW String?
+  dealerLicenseNumber String?
+  dealerName String?
+  dealerAddress String?
+  dealerPhone String?
+  dealerType String?
+  createdAt DateTime @default(now())
+  hasBarcode Boolean?
+  hasQRCode Boolean?
+  State String?
+  tagType String?
+  isInsurance Boolean?
+  insuranceProvider String?
+  agentName String?
+  policyNumber String?
+}
+
+model Product {
+  id String @id @default(uuid())
+  name String
+  description String
+  price Int
+  image String
+  link String?
+  // cart ShoppingCart[]
+}
+
+model ShoppingCart {
+  id String @id @default(uuid())
+  userId String @unique
+  user User? @relation(fields: [userId], references: [id])
+  products Purchasevisitor[]
+  total Int
+  amount Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}

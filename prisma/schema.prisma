@@ -23,8 +23,8 @@ model User {
   admin Boolean? @default(false)
   messages Message[]
   conversations Conversation[]
-  purchases Purchase[]
-  cart ShoppingCart?
+  // purchases Purchase[]
+  // cart ShoppingCart?
   createdAt DateTime @default(now())
 }
 
@@ -43,86 +43,37 @@ model Conversation {
   id String @id @default(uuid())
   members User[]
   messages Message[]
-  purchases Purchase[]
+  // purchases Purchase[]
   createdAt DateTime @default(now())
 }
 
 model Purchase {
   id String @id @default(uuid())
-  conversation_id String?
-  conversation Conversation? @relation(fields: [conversation_id], references: [id])
-  vin String?
-  color String?
-  email String?
-  state String?
-  name String?
-  lastName String?
-  address String?
-  city String?
-  houseType String?
-  zip String?
-  phone String?
-  driverLicense String?
-  hasVehicleInSurance String?
-  wantToGetVehicleInsurance String?
+  purchaseType String @default("PLATE")
+  vin String
+  color String
+  email String
+  state String
+  name String
+  lastName String
+  address String
+  city String
+  houseType String
+  vehicleType String
+  zip String
+  phone String
+  driverLicense String
   vehicleInsurance String?
-  details String?
-  isTruck String?
-  total Int? @default(0)
-  continuePurchase Boolean?
-  completed Boolean? @default(false)
-  user User @relation(fields: [user_id], references: [id])
-  user_id String
-  options String?
-  cancelled Boolean? @default(false)
-  failedTries Int? @default(0)
-  image String?
-  vehicleType String?
-  buyingType String?
+  details String
   paypalPaymentId String?
-  insuranceType String?
-  insuranceDescription String?
-  insurancePrice Int?
-  isInsurance Boolean?
-  vehicleTitle String?
-  createdAt DateTime @default(now())
-}
-
-model Purchasevisitor {
-  id String @id @default(uuid())
-  vin String?
-  color String?
-  email String?
-  state String?
-  name String?
-  lastName String?
-  address String?
-  city String?
-  houseType String?
-  zip String?
-  phone String?
-  driverLicense String?
-  hasVehicleInSurance String?
-  wantToGetVehicleInsurance String?
-  vehicleInsurance String?
-  details String?
-  isTruck String?
-  total Int? @default(0)
-  continuePurchase Boolean?
-  completed Boolean? @default(false)
-  options String?
-  cancelled Boolean? @default(false)
-  failedTries Int? @default(0)
-  image String?
-  vehicleType String?
-  buyingType String?
-  paypalPaymentId String?
-  insuranceType String?
-  insuranceDescription String?
-  insurancePrice Int?
-  isInsurance Boolean?
-  vehicleTitle String?
-  cart ShoppingCart[]
+  hasFee Boolean @default(false)
+  isInsurance Boolean @default(false)
+  total Float
+  optionSelectedPlate String
+  optionSelectedInsurance String @default("NONE")
+  insurancePrice Float?
+  insuranceProvider String?
+  image String
   createdAt DateTime @default(now())
 }
 
@@ -156,25 +107,4 @@ model PlateDetailsCodes {
   insuranceProvider String?
   agentName String?
   policyNumber String?
-}
-
-model Product {
-  id String @id @default(uuid())
-  name String
-  description String
-  price Int
-  image String
-  link String?
-  // cart ShoppingCart[]
-}
-
-model ShoppingCart {
-  id String @id @default(uuid())
-  userId String @unique
-  user User? @relation(fields: [userId], references: [id])
-  products Purchasevisitor[]
-  total Int
-  amount Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
 }
