@@ -3883,10 +3883,18 @@ app.post("/createPurchase", async (req, res) => {
     vehicleType,
   } = req.body
 
-  console.log('req.body', req.body)
+  // console.log('req.body', req.body)
 
   try {
     // console.log('req.body', req.body)
+    if (state.includes("New Jersey") && !isInsurance) {
+      if (!vehicleInsurance && !insuranceProvider) {
+        return res.status(400).json({
+          error: 'Missing vehicle insurance or insurance provider'
+        });
+      }
+    }    
+
     const purchase = await prisma.purchase.create({
       data: {
         purchaseType: purchaseType || "plate",
@@ -5407,32 +5415,37 @@ app.post("/codes/update", async (req, res) => {
 
 // const { parse } = require("csv-parse");
 // const fs = require('fs')
-// let count =0
-// fs.createReadStream('../../Downloads/Usert.csv')
+// let count = 0
+// let pruchasesPerDates = {}
+// fs.createReadStream('../../Downloads/Purchase-p2.csv')
 // .pipe(parse({ delimiter: ",", from_line: 2 }))
 //   .on("data", async function (row) {
 
-//     await  prisma.user.create({
-//       data: {
-//         id: row[0],
-//         email: row[2],
-//         username: row[1],
-//         password: row[3],
-//         image: row[4],
-//         phone_number: row[5],
-//       }
-//     }).then((user) => {
-//       count++
-//       console.log('user', user.id)
-    
-//     })
+//     // if (row[27]) {
+//     //   console.log('row', row[18], row[27])
+//     //   count += Number(row[18])
+//     // }
+//     // console.log('row', row[33])
+//     // if (row[33]) {
+//     //   if (row[27]) {
+//     //     const dd = new Date(row[33])
+//     //     pruchasesPerDates[dd.getDate()] = pruchasesPerDates[dd.getDate()] ? pruchasesPerDates[dd.getDate()] + 1 : 1
+//     //   }
+//     // }
+//     // console.log('row', row[20], row[17])
+//     if (row[17]) {
+//       console.log('row', row[20], row[17], row[26])
+//       count += Number(row[20])
+//     }
 //   })
 //   .on("end", function () {
+//     console.log(count)
 //     console.log("finished");
 //   })
 //   .on("error", function (error) {
 //     console.log(error.message);
 //   });
+  
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)
