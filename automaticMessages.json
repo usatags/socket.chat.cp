@@ -150,8 +150,8 @@
     {
       "id": "25",
       "state": "North Carolina",
-      "plates": "1) 30-Days 65$\n2) 60-Days 95$",
-      "options": [1, 2]
+      "plates": "1) 30-Days 65$",
+      "options": [1]
     },
     {
       "id": "26",
