@@ -4238,6 +4238,10 @@ app.post('/createPlateCode', async (req, res) => {
       }
     })
 
+    if (findPlateByTag.length) {
+      return res.status(400).json({ error: 'Plate code already exists' })
+    }
+
     // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
     //   return res.status(400).json({ error: 'Plate code already exists' })
     // }
