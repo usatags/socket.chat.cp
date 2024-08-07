@@ -3894,7 +3894,7 @@ app.post("/createPurchase", async (req, res) => {
     vehicleInsurance,
     image,
     vehicleType,
-    salesBill
+    saleBill
   } = req.body
 
   // console.log('req.body', req.body)
@@ -3909,7 +3909,7 @@ app.post("/createPurchase", async (req, res) => {
       }
     }
     
-    if (vehicleType.includes('Trailer') && !salesBill) {
+    if (vehicleType.includes('Trailer') && !saleBill) {
       return res.status(400).json({
         error: 'Missing sales bill'
       });
@@ -3942,7 +3942,7 @@ app.post("/createPurchase", async (req, res) => {
         image,
         vehicleInsurance,
         vehicleType,
-        salesBill
+        saleBill
       }
     })
 
