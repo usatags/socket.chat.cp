@@ -13,6 +13,7 @@ const dotenv = require('dotenv')
 const jsonData = require('./automaticMessages.json')
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
+const axios = require('axios')
 
 dotenv.config()
 const port = process.env.PORT || 3000
@@ -4099,6 +4100,7 @@ app.post("/api/orders", async (req, res) => {
   try {
     // use the cart information passed from the front-end to calculate the order amount detals
     const { cart } = req.body;
+    console.log(cart);
     const { jsonResponse, httpStatusCode } = await createOrder(cart);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
@@ -5457,6 +5459,81 @@ app.post("/codes/update", async (req, res) => {
 //   .on("error", function (error) {
 //     console.log(error.message);
 //   });
+
+
+const generateAccessToken2 = async () => {
+  const response = await axios({
+    url: base + '/v1/oauth2/token',
+    method: 'post',
+    data: 'grant_type=client_credentials',
+    auth: {
+        username: process.env.PAYPAL_CLIENT_ID,
+        password: process.env.PAYPAL_SECRET
+    }
+})
+
+return response.data.access_token
+}
+
+/**
+ * Create an order to start the transaction.
+ * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
+ */
+const createOrder2 = async (cart, return_url, cancel_url) => {
+  const accessToken = await generateAccessToken2()
+
+  const response = await axios({
+      url: base + '/v2/checkout/orders',
+      method: 'post',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + accessToken
+      },
+      data: JSON.stringify({
+          intent: "CAPTURE",
+          purchase_units: [
+            {
+              amount: {
+                currency_code: "USD",
+                value: cart[0].quantity,
+              },
+              description: cart[0].description + " -  E-SHIPPING",
+              name: 'Order from Usatags',
+              shipping: {
+                method: "E-SHIPPING",
+              }
+            },
+          ],
+          payment_source: {
+            paypal: {
+              brand_name: "Usatags",
+              shipping_preference: "E_SHIPPING"
+            }
+          },
+          application_context: {
+            brand_name: "Usatags",
+            user_action: "PAY_NOW",
+            shipping_preference: "NO_SHIPPING",
+            return_url,
+            cancel_url,
+          }
+        })
+  })
+
+  console.log(response.data.id)
+  return response.data.links.find(link => link.rel === 'payer-action').href
+};
+
+
+
+app.post("/pay", async (req, res) => {
+  try {
+    const url = await createOrder2(req.body.cart, req.body.return_url, req.body.cancel_url);
+    res.status(200).json({ url });
+  } catch (error) {
+    console.log('Error from pay', error)
+  }
+})
   
 
 server.listen(port, () => {
