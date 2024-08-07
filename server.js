@@ -3894,6 +3894,7 @@ app.post("/createPurchase", async (req, res) => {
     vehicleInsurance,
     image,
     vehicleType,
+    salesBill
   } = req.body
 
   // console.log('req.body', req.body)
@@ -3906,7 +3907,13 @@ app.post("/createPurchase", async (req, res) => {
           error: 'Missing vehicle insurance or insurance provider'
         });
       }
-    }    
+    }
+    
+    if (vehicleType.includes('Trailer') && !salesBill) {
+      return res.status(400).json({
+        error: 'Missing sales bill'
+      });
+    }
 
     const purchase = await prisma.purchase.create({
       data: {
@@ -3934,7 +3941,8 @@ app.post("/createPurchase", async (req, res) => {
         insuranceProvider,
         image,
         vehicleInsurance,
-        vehicleType
+        vehicleType,
+        salesBill
       }
     })
 

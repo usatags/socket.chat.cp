@@ -75,6 +75,7 @@ model Purchase {
   insuranceProvider String?
   image String
   createdAt DateTime @default(now())
+  saleBill String?
 }
 
 model PlateDetailsCodes {
