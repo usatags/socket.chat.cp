@@ -3555,6 +3555,19 @@ io.emit(`notification-${noSender[0].id}`, {
   })
 })
 
+app.all('*', function(req, res, next) {
+  var start = process.hrtime();
+
+  // event triggers when express is done sending response
+  res.on('finish', function() {
+    var hrtime = process.hrtime(start);
+    var elapsed = parseFloat(hrtime[0] + (hrtime[1] / 1000000).toFixed(3), 10);
+    console.log(elapsed + 'ms');
+  });
+
+  next();
+});
+
 app.get('/users/:roleFilter', async (req, res) => {
   const { roleFilter } = req.params
 
