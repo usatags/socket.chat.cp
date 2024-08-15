@@ -14,6 +14,7 @@ const jsonData = require('./automaticMessages.json')
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 const axios = require('axios')
+const paypal = require("@paypal/checkout-server-sdk")
 
 dotenv.config()
 const port = process.env.PORT || 3000
@@ -28,10 +29,14 @@ const prisma = new PrismaClient({ adapter })
 
 // const base = "https://api-m.sandbox.paypal.com";
 const base = "https://www.paypal.com";
+// const paypalEnvironment = new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+const paypalEnvironment = new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+
+const paypalClientWithRefreshToken = new paypal.core.PayPalHttpClient(paypalEnvironment)
+
 const app = express()
 
 app.use(cors({
-  // origin: [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com', 'https://ga.systemdmvusa.com', 'https://ab.systemdmvusa.com', 'https://az.systemdmvusa.com', 'https://ca.systemdmvusa.com', 'https://co.systemdmvusa.com', 'https://ct.systemdmvusa.com', 'https://de.systemdmvusa.com', 'https://fl.systemdmvusa.com', 'https://il.systemdmvusa.com', 'https://in.systemdmvusa.com', 'https://ia.systemdmvusa.com', 'https://ks.systemdmvusa.com', 'https://ky.systemdmvusa.com', 'https://la.systemdmvusa.com', 'https://md.systemdmvusa.com', 'https://ma.systemdmvusa.com', 'https://https://mi.systemdmvusa.com', 'https://mn.systemdmvusa.com', 'https://mo.systemdmvusa.com', 'https://mt.systemdmvusa.com', 'https://nv.systemdmvusa.com', 'https://nj.systemdmvusa.com', 'https://nm.systemdmvusa.com', 'https://nc.systemdmvusa.com', 'https://nd.systemdmvusa.com', 'https://oh.systemdmvusa.com', 'https://ok.systemdmvusa.com', 'https://or.systemdmvusa.com', 'https://pa.systemdmvusa.com', 'https://ri.systemdmvusa.com', 'https://sc.systemdmvusa.com', 'https://tn.systemdmvusa.com', 'https://tx.systemdmvusa.com', 'https://ut.systemdmvusa.com', 'https://vt.systemdmvusa.com', 'https://va.systemdmvusa.com', 'https://wa.systemdmvusa.com', 'https://wv.systemdmvusa.com', 'https://wi.systemdmvusa.com', 'https://wy.systemdmvusa.com', 'https://geico.systemdmvusa.com', 'https://allstate.systemdmvusa.com', 'https://statefarm.systemdmvusa.com', 'https://progressive.systemdmvusa.com'], 
   origin: "*",
   credentials: true
 }))
@@ -41,7 +46,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cookieParser())
 app.use(function(req, res, next) {
-  // const allowedOrigins = [ 'https://usadealerplates.us', 'https://usatag.us', 'https://systemdmvusa.com', 'https://ga.systemdmvusa.com', 'https://ab.systemdmvusa.com', 'https://az.systemdmvusa.com', 'https://ca.systemdmvusa.com', 'https://co.systemdmvusa.com', 'https://ct.systemdmvusa.com', 'https://de.systemdmvusa.com', 'https://fl.systemdmvusa.com', 'https://il.systemdmvusa.com', 'https://in.systemdmvusa.com', 'https://ia.systemdmvusa.com', 'https://ks.systemdmvusa.com', 'https://ky.systemdmvusa.com', 'https://la.systemdmvusa.com', 'https://md.systemdmvusa.com', 'https://ma.systemdmvusa.com', 'https://https://mi.systemdmvusa.com', 'https://mn.systemdmvusa.com', 'https://mo.systemdmvusa.com', 'https://mt.systemdmvusa.com', 'https://nv.systemdmvusa.com', 'https://nj.systemdmvusa.com', 'https://nm.systemdmvusa.com', 'https://nc.systemdmvusa.com', 'https://nd.systemdmvusa.com', 'https://oh.systemdmvusa.com', 'https://ok.systemdmvusa.com', 'https://or.systemdmvusa.com', 'https://pa.systemdmvusa.com', 'https://ri.systemdmvusa.com', 'https://sc.systemdmvusa.com', 'https://tn.systemdmvusa.com', 'https://tx.systemdmvusa.com', 'https://ut.systemdmvusa.com', 'https://vt.systemdmvusa.com', 'https://va.systemdmvusa.com', 'https://wa.systemdmvusa.com', 'https://wv.systemdmvusa.com', 'https://wi.systemdmvusa.com', 'https://wy.systemdmvusa.com', 'https://geico.systemdmvusa.com', 'https://allstate.systemdmvusa.com', 'https://statefarm.systemdmvusa.com', 'https://progressive.systemdmvusa.com'];
+
   const allowedOrigins =  "*";
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -52,6 +57,15 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
+
+app.use((err, req, res, next) => {
+  if (err.code === "ECONNRESET") {
+    console.error('Connection reset error', err);
+    res.status(500).send('Connection was reset, please try again.');
+  } else {
+    next(err)
+  }
+})
 
 const server = Server(app)
 
@@ -4122,8 +4136,51 @@ app.post("/api/orders", async (req, res) => {
     // use the cart information passed from the front-end to calculate the order amount detals
     const { cart } = req.body;
     console.log(cart);
-    const { jsonResponse, httpStatusCode } = await createOrder(cart);
-    res.status(httpStatusCode).json(jsonResponse);
+    // const { jsonResponse, httpStatusCode } = await createOrder(cart);
+    // res.status(httpStatusCode).json(jsonResponse);
+    const orderRequest = new paypal.orders.OrdersCreateRequest();
+
+    orderRequest.requestBody({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "USD",
+            value: cart[0].quantity,
+            breakdown: {
+              item_total: {
+                currency_code: "USD",
+                value: cart[0].quantity,
+              }
+            }
+          },
+          description: cart[0].description + " -  E-SHIPPING",
+          name: 'Order from Usatags',
+          shipping: {
+            method: "E-SHIPPING",
+          },
+          items: [
+            {
+              name: 'Order from Usatags',
+              quantity: '1',
+              category: 'DIGITAL_GOODS',
+              description: cart[0].description,
+              unit_amount: {
+                currency_code: "USD",
+                value: cart[0].quantity,
+              }
+            }
+          ]
+        },
+      ],
+      application_context: {
+        shipping_preference: "NO_SHIPPING",
+        brand_name: "Usatags",
+      }
+    })
+
+    const orderResponse = await paypalClientWithRefreshToken.execute(orderRequest);
+    return res.status(200).json(orderResponse.result);
   } catch (error) {
     console.error("Failed to create order:", error);
     res.status(500).json({ error: "Failed to create order." });
@@ -5564,3 +5621,5 @@ app.post("/pay", async (req, res) => {
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
+
+server.timeout = 300000

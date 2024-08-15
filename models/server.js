@@ -6,14 +6,13 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 
 const Sockects = require('./sockets');
-const { dbConnection } = require('../database/config');
+const { prisma } = require('../database/config');
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
     this.server = http.createServer(this.app);
-    dbConnection();
     this.io = socket(this.server, {
       cors: {
         // origin: process.env.CLIENT_URL,
