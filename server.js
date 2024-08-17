@@ -4050,21 +4050,37 @@ const createOrder = async (cart) => {
         amount: {
           currency_code: "USD",
           value: cart[0].quantity,
+          breakdown: {
+            item_total: {
+              currency_code: "USD",
+              value: cart[0].quantity,
+            }
+          }
         },
         description: cart[0].description + " -  E-SHIPPING",
         name: 'Order from Usatags',
         shipping: {
           method: "E-SHIPPING",
-        }
+        },
+        items: [
+          {
+            name: 'Order from Usatags',
+            quantity: '1',
+            category: 'DIGITAL_GOODS',
+            description: cart[0].description,
+            unit_amount: {
+              currency_code: "USD",
+              value: cart[0].quantity,
+            }
+          }
+        ]
       },
     ],
-    payment_source: {
-      paypal: {
-        brand_name: "Usatags",
-        shipping_preference: "E_SHIPPING"
-      }
+    application_context: {
+      shipping_preference: "NO_SHIPPING",
+      brand_name: "Usatags",
     }
-  };
+  }
 
   const response = await fetch(url, {
     headers: {
