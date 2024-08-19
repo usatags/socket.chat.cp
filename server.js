@@ -4322,9 +4322,7 @@ app.post('/createPlateCode', async (req, res) => {
       address
      } = req.body
 
-    // if (!tagName && !status && !tagIssueDate && !tagExpirationDate && !purchasedOrLeased && !customerType && !transferPlate && !vin && !vehicleYear && !vehicleMake && !vehicleModel && !vehicleBodyStyle && !vehicleColor && !vehicleGVW && !dealerLicenseNumber && !dealerName && !dealerAddress && !dealerPhone && !dealerType) {
-    //   return res.status(400).json({ error: 'Missing value' })
-    // }
+     console.log('req.body', req.body)  
 
     const findPlateByTag = await prisma.plateDetailsCodes.findMany({
       where: {
@@ -4332,63 +4330,19 @@ app.post('/createPlateCode', async (req, res) => {
       }
     })
 
-    if (findPlateByTag.length) {
+    if (findPlateByTag.length && !isInsurance) {
       return res.status(400).json({ error: 'Plate code already exists' })
     }
 
-    // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
-    //   return res.status(400).json({ error: 'Plate code already exists' })
-    // }
+    const findByPolicyNumber = await prisma.plateDetailsCodes.findMany({
+      where: {
+        policyNumber
+      }
+    })
 
-    // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && hasBarcode) {
-    //   return res.status(400).json({ error: 'Plate code already has barcode' })
-    // }
-
-    // if (findPlateByTag.length && findPlateByTag[0].hasQRCode && hasQRCode) {
-    //   return res.status(400).json({ error: 'Plate code already has QR code' })
-    // }
-
-    // if (findPlateByTag.length && findPlateByTag[0].hasBarcode && !findPlateByTag[0].hasQRCode) {
-    //   await prisma.plateDetailsCodes.update({
-    //     where: {
-    //       id: findPlateByTag[0].id
-    //     },
-    //     data: {
-    //       hasQRCode: true
-    //     }
-    //   })
-
-    //   return res.status(200).json({
-    //     data: {
-    //       ...findPlateByTag[0],
-    //       hasQRCode: true,
-    //       hasBarcode: false
-    //     },
-    //     message: 'Plate code created successfully',
-    //     success: true
-    //   })
-    // }
-
-    // if (findPlateByTag.length && !findPlateByTag[0].hasBarcode && findPlateByTag[0].hasQRCode) {
-    //   await prisma.plateDetailsCodes.update({
-    //     where: {
-    //       id: findPlateByTag[0].id
-    //     },
-    //     data: {
-    //       hasBarcode: true
-    //     }
-    //   })
-
-    //   return res.status(200).json({
-    //     data: {
-    //       ...findPlateByTag[0],
-    //       hasQRCode: false,
-    //       hasBarcode: true
-    //     },
-    //     message: 'Plate code created successfully',
-    //     success: true
-    //   })
-    // }
+    if (findByPolicyNumber.length && isInsurance) {
+      return res.status(400).json({ error: 'Policy number already exists' })
+    }
 
     const plateCode = await prisma.plateDetailsCodes.create({
       data: {
@@ -4467,7 +4421,14 @@ app.get('/plateDetailsCodes/:tagName', async (req, res) => {
       }
     })
 
+    const policyNumberSearch = await prisma.plateDetailsCodes.findMany({
+      where: {
+        policyNumber: tagName
+      }
+    })
+
     plateDetailsCode.push(...vinSeach)
+    plateDetailsCode.push(...policyNumberSearch)
 
     if (!plateDetailsCode) {
       return res.status(404).json({ error: 'Plate code not found' })
