@@ -110,4 +110,11 @@ model PlateDetailsCodes {
   policyNumber String?
   nameOwner String?
   address String?
+  effectiveTimestamp String?
+  verificationCode String?
+  createTimestamp String?
+  endTimestamp String?
+  statusCode String?
+  dealerGDN String?
+  dealerDBA String?
 }

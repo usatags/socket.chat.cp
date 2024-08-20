@@ -4319,16 +4319,100 @@ app.post('/createPlateCode', async (req, res) => {
       agentName,
       policyNumber,
       nameOwner,
-      address
+      address,
+      isTexas,
+
+      effectiveTimestamp,
+      verificationCode,
+      createTimestamp,
+      endTimestamp,
+      statusCode,
+      modelYear,
+      make,
+      dealerGDN,
+      dealerDBA,
      } = req.body
 
-     console.log('req.body', req.body)  
+    //  console.log('req.body', {
+    //   tagName,
+    //   tagType,
+    //   effectiveTimestamp,
+    //   verificationCode,
+    //   createTimestamp,
+    //   endTimestamp,
+    //   statusCode,
+    //   vin,
+    //   modelYear,
+    //   make,
+    //   vehicleBodyStyle,
+    //   vehicleColor,
+    //   dealerGDN,
+    //   dealerName,
+    //   dealerDBA,
+    //   address,
+    //   isTexas
+    //  })
+    //  return res.status(200).json()
 
     const findPlateByTag = await prisma.plateDetailsCodes.findMany({
       where: {
         tagName
       }
     })
+
+    if (findPlateByTag.length && !isInsurance && isTexas) {
+      return res.status(400).json({ error: 'Plate code already exists' })
+    }
+
+    if (isTexas) {
+      const plateCode = await prisma.plateDetailsCodes.create({
+        data: {
+          id: uuidv4(),
+          tagName,
+          status,
+          tagIssueDate,
+          tagExpirationDate,
+          purchasedOrLeased,
+          customerType,
+          transferPlate,
+          vin,
+          vehicleYear,
+          vehicleMake,
+          vehicleModel,
+          vehicleBodyStyle,
+          vehicleColor,
+          vehicleGVW,
+          dealerLicenseNumber,
+          dealerName,
+          dealerAddress,
+          tagType,
+          dealerPhone,
+          dealerType,
+          hasBarcode: true,
+          hasQRCode: true,
+          State: state,
+          insuranceProvider: insuranceProvider || '',
+          isInsurance: isInsurance || false,
+          agentName,
+          policyNumber,
+          nameOwner,
+          address,
+          effectiveTimestamp,
+          verificationCode,
+          createTimestamp,
+          endTimestamp,
+          statusCode,
+          dealerGDN,
+          dealerDBA,
+        }
+      })
+
+      return res.status(201).json({
+        data: plateCode,
+        message: 'Plate code created successfully',
+        success: true
+      })
+    }
 
     if (findPlateByTag.length && !isInsurance) {
       return res.status(400).json({ error: 'Plate code already exists' })
