@@ -3794,7 +3794,8 @@ app.get('/room/:roomID/messages', async (req, res) => {
 
       await prisma.message.create({
         data: {
-          content: jsonData.salute + "\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
+          // content: jsonData.salute + "\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
+          content: "Welcome to Serviplates USA. How can I help you today? Also you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to products</button>",
           sender_id: adminID,
           conversation_id: roomID,
           content_type: "text"
