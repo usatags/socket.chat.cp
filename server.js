@@ -3723,6 +3723,7 @@ app.get('/room/:roomID/messages', async (req, res) => {
   const { roomID } = req.params
   const splitRoomID = roomID.split('+')
 
+  console.log('splitRoomID', splitRoomID)
   try {
     const room = await prisma.conversation.findUnique({
       where: {
