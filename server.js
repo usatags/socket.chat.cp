@@ -4173,13 +4173,13 @@ app.post("/api/orders", async (req, res) => {
             }
           },
           description: cart[0].description + " -  E-SHIPPING",
-          name: 'Order from Usatags',
+          name: 'Order from PixelNetStudios',
           shipping: {
             method: "E-SHIPPING",
           },
           items: [
             {
-              name: 'Order from Usatags',
+              name: 'Order from PixelNetStudios',
               quantity: '1',
               category: 'DIGITAL_GOODS',
               description: cart[0].description,
@@ -4193,7 +4193,7 @@ app.post("/api/orders", async (req, res) => {
       ],
       application_context: {
         shipping_preference: "NO_SHIPPING",
-        brand_name: "Usatags",
+        brand_name: "PixelNetStudios",
       }
     })
 
