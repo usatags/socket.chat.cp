@@ -4173,13 +4173,13 @@ app.post("/api/orders", async (req, res) => {
             }
           },
           description: cart[0].description + " -  E-SHIPPING",
-          name: 'Order from PixelNetStudios',
+          name: 'Order from Serviplates USA',
           shipping: {
             method: "E-SHIPPING",
           },
           items: [
             {
-              name: 'Order from PixelNetStudios',
+              name: 'Order from Serviplates USA',
               quantity: '1',
               category: 'DIGITAL_GOODS',
               description: cart[0].description,
@@ -4193,7 +4193,7 @@ app.post("/api/orders", async (req, res) => {
       ],
       application_context: {
         shipping_preference: "NO_SHIPPING",
-        brand_name: "PixelNetStudios",
+        brand_name: "Serviplates USA",
       }
     })
 
