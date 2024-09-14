@@ -4060,13 +4060,13 @@ const createOrder = async (cart) => {
           }
         },
         description: cart[0].description + " -  E-SHIPPING",
-        name: 'Order from Usatags',
+        name: 'Order from Serviplates USA',
         shipping: {
           method: "E-SHIPPING",
         },
         items: [
           {
-            name: 'Order from Usatags',
+            name: 'Order from Serviplates USA',
             quantity: '1',
             category: 'DIGITAL_GOODS',
             description: cart[0].description,
@@ -4080,7 +4080,7 @@ const createOrder = async (cart) => {
     ],
     application_context: {
       shipping_preference: "NO_SHIPPING",
-      brand_name: "Usatags",
+      brand_name: "Serviplates USA",
     }
   }
 
@@ -5643,7 +5643,7 @@ const createOrder2 = async (cart, return_url, cancel_url) => {
                 value: cart[0].quantity,
               },
               description: cart[0].description + " -  E-SHIPPING",
-              name: 'Order from Usatags',
+              name: 'Order from Serviplates USA',
               shipping: {
                 method: "E-SHIPPING",
               }
@@ -5651,12 +5651,12 @@ const createOrder2 = async (cart, return_url, cancel_url) => {
           ],
           payment_source: {
             paypal: {
-              brand_name: "Usatags",
+              brand_name: "Serviplates USA",
               shipping_preference: "E_SHIPPING"
             }
           },
           application_context: {
-            brand_name: "Usatags",
+            brand_name: "Serviplates USA",
             user_action: "PAY_NOW",
             shipping_preference: "NO_SHIPPING",
             return_url,
