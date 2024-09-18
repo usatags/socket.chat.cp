@@ -1,4 +1,18 @@
 -- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "username" TEXT,
+    "email" TEXT,
+    "password" TEXT,
+    "image" TEXT,
+    "phone_number" TEXT,
+    "socketId" TEXT,
+    "active" BOOLEAN DEFAULT false,
+    "admin" BOOLEAN DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
 CREATE TABLE "Message" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "content" TEXT NOT NULL,
@@ -44,7 +58,8 @@ CREATE TABLE "Purchase" (
     "insurancePrice" REAL,
     "insuranceProvider" TEXT,
     "image" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "saleBill" TEXT
 );
 
 -- CreateTable
@@ -77,7 +92,16 @@ CREATE TABLE "PlateDetailsCodes" (
     "isInsurance" BOOLEAN,
     "insuranceProvider" TEXT,
     "agentName" TEXT,
-    "policyNumber" TEXT
+    "policyNumber" TEXT,
+    "nameOwner" TEXT,
+    "address" TEXT,
+    "effectiveTimestamp" TEXT,
+    "verificationCode" TEXT,
+    "createTimestamp" TEXT,
+    "endTimestamp" TEXT,
+    "statusCode" TEXT,
+    "dealerGDN" TEXT,
+    "dealerDBA" TEXT
 );
 
 -- CreateTable
@@ -87,6 +111,9 @@ CREATE TABLE "_ConversationToUser" (
     CONSTRAINT "_ConversationToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Conversation" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_ConversationToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ConversationToUser_AB_unique" ON "_ConversationToUser"("A", "B");

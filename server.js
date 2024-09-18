@@ -430,7 +430,7 @@ return response.data.access_token
  * Create an order to start the transaction.
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
  */
-const createOrder2 = async (cart, return_url = "", cancel_url = "") => {
+const createOrder2 = async (cart) => {
   const accessToken = await generateAccessToken2()
 
   const response = await axios({
@@ -469,7 +469,6 @@ const createOrder2 = async (cart, return_url = "", cancel_url = "") => {
         })
   })
 
-  console.log(response.data.id)
   return response.data.links.find(link => link.rel === 'payer-action').href
 };
 
@@ -477,7 +476,7 @@ const createOrder2 = async (cart, return_url = "", cancel_url = "") => {
 
 app.post("/pay", async (req, res) => {
   try {
-    const url = await createOrder2(req.body.cart, req.body.return_url, req.body.cancel_url);
+    const url = await createOrder2(req.body.cart);
     res.status(200).json({ url });
   } catch (error) {
     console.log('Error from pay', error)
