@@ -388,7 +388,45 @@ app.post('/completePurchase', async (req, res) => {
     console.log('Error from completePurchase', error)
     res.status(500).json({ error: 'Internal server error' })
   }
-})  
+}) 
+
+app.post('/updatePurchase', async (req, res) => {
+  try {
+    const { purchaseID, paypalPaymentId } = req.body
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        id: purchaseID
+      },
+    })
+    
+
+    if (purchase) {
+    await prisma.purchase.update({
+      where: {
+        id: purchaseID
+      },
+      data: {
+        paypalPaymentId,
+        // completed: true,
+      }
+    })
+
+    return res.status(200).json({
+      data: {
+        ...purchase,
+        paypalPaymentId,
+        completed: true,
+      },
+      message: 'Purchase updated successfully',
+      success: true
+    })
+    }
+    return res.status(404).json({ error: 'Purchase not found' })
+  } catch (error) {
+    console.log('Error from updatePurchase', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
 
 app.get('/env', async (req, res) => {
   try {
