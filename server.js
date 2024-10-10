@@ -1,5 +1,6 @@
 const socket = require('socket.io')
 const cors = require('cors')
+const nodemailer = require('nodemailer');
 const {
   Server
 } = require('http')
@@ -4248,45 +4249,195 @@ app.post('/completePurchase', async (req, res) => {
     console.log('Error from completePurchase', error)
     res.status(500).json({ error: 'Internal server error' })
   }
-})  
+}) 
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || '',
+    pass: process.env.EMAIL_PASSWORD || ''
+  }
+})
 
 app.post('/updatePurchase', async (req, res) => {
   try {
-    const { purchaseID, paypalPaymentId } = req.body
+    const { purchaseID, paypalPaymentId, pFrom } = req.body;
+
+    // Find the purchase by ID
     const purchase = await prisma.purchase.findUnique({
-      where: {
-        id: purchaseID
-      },
-    })
-    
+      where: { id: purchaseID },
+    });
 
-    if (purchase) {
-    await prisma.purchase.update({
-      where: {
-        id: purchaseID
-      },
-      data: {
-        paypalPaymentId,
-        // completed: true,
+    if (!purchase) {
+      return res.status(404).json({ error: 'Purchase not found' });
+    }
+
+    // Prepare the email sending function
+    const sendEmail = async (purchaseDetails) => {
+      try {
+        const mailOptions = {
+          from: "alejo1garciasosa@gmail.com",
+          to: "usatagsus@gmail.com",
+          subject: `COMPRA DESDE - ${pFrom}`,
+          html: `
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Detalles de la Compra</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      line-height: 1.6;
+                      margin: 0;
+                      padding: 20px;
+                      background-color: #f4f4f4;
+                  }
+                  .container {
+                      background-color: #ffffff;
+                      padding: 20px;
+                      border-radius: 8px;
+                      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                      max-width: 600px;
+                      margin: 0 auto;
+                  }
+                  h1 {
+                      color: #800080; /* Purple color */
+                      text-align: center;
+                      margin-bottom: 20px;
+                  }
+                  h2, h3 {
+                      color: #333333;
+                  }
+                  p {
+                      color: #555555;
+                      margin: 8px 0;
+                  }
+                  .section {
+                      margin-bottom: 20px;
+                  }
+                  img {
+                      max-width: 100%;
+                      height: auto;
+                      border: 1px solid #dddddd;
+                      border-radius: 4px;
+                      margin-bottom: 10px;
+                  }
+                  a {
+                      color: #007BFF;
+                      text-decoration: none;
+                  }
+                  a:hover {
+                      text-decoration: underline;
+                  }
+                  .footer {
+                      margin-top: 20px;
+                      text-align: center;
+                      color: #777777;
+                      font-size: 0.9em;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+  
+                  <h2>Detalles de la Compra</h2>
+                  <div class="section">
+                      <p><strong>Purchase ID:</strong> ${purchaseDetails.id}</p>
+                      <p><strong>Payment ID:</strong> ${purchaseDetails.paypalPaymentId}</p>
+                      <p><strong>Detalles:</strong> ${purchaseDetails.details}</p>
+                  </div>
+  
+                  <div class="section">
+                      <h3>Información Personal</h3>
+                      <p><strong>Nombre:</strong> ${purchaseDetails.name}</p>
+                      <p><strong>Apellido:</strong> ${purchaseDetails.lastName}</p>
+                      <p><strong>Email:</strong> ${purchaseDetails.email}</p>
+                      <p><strong>Estado:</strong> ${purchaseDetails.state}</p>
+                  </div>
+  
+                  <div class="section">
+                      <h3>Información del Vehículo</h3>
+                      <p><strong>VIN:</strong> ${purchaseDetails.vin}</p>
+                      <p><strong>Color:</strong> ${purchaseDetails.color}</p>
+                  </div>
+  
+                  <div class="section">
+                      <h3>Dirección</h3>
+                      <p><strong>Dirección:</strong> ${purchaseDetails.address}</p>
+                      <p><strong>Ciudad:</strong> ${purchaseDetails.city}</p>
+                      <p><strong>Tipo de Vivienda:</strong> ${purchaseDetails.houseType}</p>
+                      <p><strong>Tipo de Vehículo:</strong> ${purchaseDetails.vehicleType}</p>
+                      <p><strong>Tipo de Compra:</strong> ${purchaseDetails.purchaseType}</p>
+                      <p><strong>Código Postal:</strong> ${purchaseDetails.zip}</p>
+                  </div>
+  
+                  <div class="section">
+                      <h3>Contacto</h3>
+                      <p><strong>Teléfono:</strong> ${purchaseDetails.phone}</p>
+                  </div>
+  
+                  <div class="section">
+                      <h3>Licencia de Conducir</h3>
+                      <img src="${purchaseDetails.driverLicense}" alt="Foto de la Licencia de Conducir">
+                      <p><a href="${purchaseDetails.driverLicense}" target="_blank">Ver Licencia de Conducir</a></p>
+                  </div>
+  
+                  <div class="section">
+                      <h3>Seguro del Vehículo</h3>
+                      <p><strong>Seguro Proveedor:</strong> ${purchaseDetails.vehicleInsurance}</p>
+                  </div>
+  
+                  <div class="footer">
+                      <small>
+                        <a href="usatag.us" target="_blank">${purchaseDetails.comp}</a>
+                      </small>
+                  </div>
+              </div>
+          </body>
+          </html>
+        `,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully');
+      } catch (error) {
+        console.error('Error sending email: ', error);
+        // We log the error but don't reject it to not block the main flow
       }
-    })
+    };
 
+    // Update the purchase in the database
+    const updatePurchase = prisma.purchase.update({
+      where: { id: purchaseID },
+      data: { paypalPaymentId },
+    });
+
+    // Run the update and email sending tasks in parallel
+    const [updatedPurchase] = await Promise.all([
+      updatePurchase, // Update the purchase
+      sendEmail(purchase) // Send the email
+    ]);
+
+    // Return the success response after both tasks are finished
     return res.status(200).json({
       data: {
-        ...purchase,
+        ...updatedPurchase,
         paypalPaymentId,
         completed: true,
       },
-      message: 'Purchase updated successfully',
-      success: true
-    })
-    }
-    return res.status(404).json({ error: 'Purchase not found' })
+      message: 'Purchase updated and email sent successfully',
+      success: true,
+    });
+
   } catch (error) {
-    console.log('Error from updatePurchase', error)
-    res.status(500).json({ error: 'Internal server error' })
+    console.error('Error from updatePurchase', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-})
+});
+
+
 
 app.post('/createPlateCode', async (req, res) => {
   try {
