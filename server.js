@@ -22,10 +22,10 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-// const base = "https://api-m.sandbox.paypal.com";
-const base = "https://www.paypal.com";
-// const paypalEnvironment = new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
-const paypalEnvironment = new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+const base = "https://api-m.sandbox.paypal.com";
+// const base = "https://www.paypal.com";
+const paypalEnvironment = new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+// const paypalEnvironment = new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
 
 const paypalClientWithRefreshToken = new paypal.core.PayPalHttpClient(paypalEnvironment)
 
@@ -311,13 +311,13 @@ app.post("/api/orders", async (req, res) => {
             }
           },
           description: cart[0].description + " -  E-SHIPPING",
-          name: 'Order from PlacasTemporales',
+          name: String(cart[0].description) + ' - E-SHIPPING',
           shipping: {
             method: "E-SHIPPING",
           },
           items: [
             {
-              name: 'Order from PlacasTemporales',
+              name: String(cart[0].description) + ' - E-SHIPPING',
               quantity: '1',
               category: 'DIGITAL_GOODS',
               description: cart[0].description,
@@ -487,7 +487,7 @@ const createOrder2 = async (cart) => {
                 value: cart[0].quantity,
               },
               description: cart[0].description + " -  E-SHIPPING",
-              name: 'Order from PlacasTemporales',
+              name: String(cart[0].description) + ' - E-SHIPPING',
               shipping: {
                 method: "E-SHIPPING",
               }
