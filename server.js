@@ -5653,7 +5653,7 @@ const Bull = require('bull');
 
 const taskQueue = new Bull('background-tasks', {
   redis: {
-      host: '127.0.0.1',
+      host: 'redis://red-csbfkp3tq21c739vod80',
       port: 6379,
   },
 });
