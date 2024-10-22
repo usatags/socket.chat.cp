@@ -5653,11 +5653,17 @@ const Bull = require('bull');
 
 const taskQueue = new Bull('background-tasks', {
   redis: {
-      host: 'redis://red-csbfkp3tq21c739vod80',
-      port: 6379,
+    // Use the rediss URL format for secure Redis connection
+    url: 'rediss://red-csbfkp3tq21c739vod80:YOacBxzPyQOlk7b2KkjXGqmV8rh3fHJI@oregon-redis.render.com:6379',
   },
 });
 
+// Test if Redis connection is ready
+taskQueue.isReady().then(() => {
+  console.log('Connected to Redis successfully');
+}).catch(err => {
+  console.error('Failed to connect to Redis', err);
+});
 const updatePurchase = async ({ purchaseDetails, paypalPaymentId, pFrom }) => {
   // Función para enviar el correo electrónico
   const sendEmail = async (purchaseDetails) => {
