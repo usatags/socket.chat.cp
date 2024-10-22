@@ -5653,7 +5653,7 @@ const Bull = require('bull');
 
 const taskQueue = new Bull('background-tasks', {
   redis: {
-    url: 'rediss://red-csbfkp3tq21c739vod80:YOacBxzPyQOlk7b2KkjXGqmV8rh3fHJI@oregon-redis.render.com:6379'
+    url: 'redis://red-csbfkp3tq21c739vod80:6379'
   },
 });
 
