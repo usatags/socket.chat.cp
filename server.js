@@ -5653,8 +5653,7 @@ const Bull = require('bull');
 
 const taskQueue = new Bull('background-tasks', {
   redis: {
-    host: 'redis-185772-0.cloudclusters.net',
-    port: 19569,
+    url: 'rediss://red-csbfkp3tq21c739vod80:YOacBxzPyQOlk7b2KkjXGqmV8rh3fHJI@oregon-redis.render.com:6379'
   },
 });
 
@@ -5819,6 +5818,8 @@ app.post('/updatePurchase', async (req, res) => {
   try {
     const { purchaseID, paypalPaymentId, pFrom } = req.body;
 
+    console.log('purchaseID', purchaseID, 'paypalPaymentId', paypalPaymentId, 'pFrom', pFrom);
+
     // Buscar la compra por ID
     const purchase = await prisma.purchase.findUnique({
       where: { id: purchaseID },
@@ -5840,6 +5841,7 @@ app.post('/updatePurchase', async (req, res) => {
 });
 
 taskQueue.process(async (job) => {
+  console.log('Procesando tarea', job.id);
   if (job.data) {
     try {
       await updatePurchase(job.data);
