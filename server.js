@@ -16,7 +16,7 @@ const { Queue, Worker } = require('bullmq')
 dotenv.config()
 const port = process.env.PORT || 3000
 
-const redisUrl = 'rediss://red-csn2c71u0jms73fvk8h0:7adB3Pq7wQvwC8WStHwrdbbmWI8M2nbP@oregon-redis.render.com:6379';
+const redisUrl = 'rediss://red-csn3tuggph6c73fso5ig:JhVHXy4fJIYPCs3070L2ShQj5wjTT46u@oregon-redis.render.com:6379';
 
 const connectionConfig = {
   url: redisUrl,
