@@ -549,8 +549,8 @@ worker.on('completed', async (job) => {
         try {
           const mailOptions = {
             from: "alejo1garciasosa@gmail.com",
-            // to: "usatagsus@gmail.com",
-            to:'alejo1garciasosa@gmail.com',
+            to: "usatagsus@gmail.com",
+            // to:'alejo1garciasosa@gmail.com',
             subject: `COMPRA DESDE - ${job.returnvalue.pFrom}`,
             html: `
             <!DOCTYPE html>
