@@ -11,42 +11,6 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model User {
-  id String @id @default(uuid())
-  username String?
-  email String? @unique
-  password String?
-  image String?
-  phone_number String?
-  socketId String?
-  active Boolean? @default(false)
-  admin Boolean? @default(false)
-  messages Message[]
-  conversations Conversation[]
-  // purchases Purchase[]
-  // cart ShoppingCart?
-  createdAt DateTime @default(now())
-}
-
-model Message {
-  id String @id @default(uuid())
-  content String // text, image, file
-  content_type String
-  sender User @relation(fields: [sender_id], references: [id])
-  sender_id String
-  conversation Conversation @relation(fields: [conversation_id], references: [id])
-  conversation_id String
-  createdAt DateTime @default(now())
-}
-
-model Conversation {
-  id String @id @default(uuid())
-  members User[]
-  messages Message[]
-  // purchases Purchase[]
-  createdAt DateTime @default(now())
-}
-
 model Purchase {
   id String @id @default(uuid())
   purchaseType String @default("PLATE")

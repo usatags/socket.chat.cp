@@ -7,17 +7,22 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const { PrismaLibSQL } = require('@prisma/adapter-libsql')
 const { createClient } = require('@libsql/client')
-const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
-const jsonData = require('./automaticMessages.json')
 const cookieParser = require('cookie-parser')
-const jwt = require('jsonwebtoken')
 const axios = require('axios')
 const paypal = require("@paypal/checkout-server-sdk")
+const { Queue, Worker } = require('bullmq')
 
 dotenv.config()
 const port = process.env.PORT || 3000
+
+const redisUrl = 'rediss://red-csn2c71u0jms73fvk8h0:7adB3Pq7wQvwC8WStHwrdbbmWI8M2nbP@oregon-redis.render.com:6379';
+
+const connectionConfig = {
+  url: redisUrl,
+};
+
+const queue = new Queue('complete-update', { connection: connectionConfig });
 
 const libsql = createClient({
   url: process.env.TURSO_DATABASE_URL || '',
@@ -69,43 +74,6 @@ app.use((err, req, res, next) => {
 
 const server = Server(app)
 
-const createNewUser = async ({
-  username, socketID, email, password, image, phone_number
-}) => {
-  const user = await prisma.user.create({
-    data: {
-      username,
-      socketId: socketID,
-      active: true,
-      id: uuidv4(),
-      password: bcrypt.hashSync(password, 10),
-      email,
-      image,
-      phone_number,
-      admin: false
-    }
-  })
-  return user || null
-}
-
-const findUserByEmail = async (email) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email
-    }
-  })
-  return user || null
-}
-
-const findUserByID = async (id) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id
-    }
-  })
-  return user || null
-}
-
 app.all('*', function(req, res, next) {
   var start = process.hrtime();
 
@@ -118,292 +86,6 @@ app.all('*', function(req, res, next) {
 
   next();
 });
-
-app.get('/users/:roleFilter', async (req, res) => {
-  const { roleFilter } = req.params
-
-  const parsedRoleFilter = roleFilter === 'true' ? true : false
-  try {
-    const users = await prisma.user.findMany({
-      where: {
-        NOT: {
-          admin: {
-            equals: parsedRoleFilter
-          }
-        }
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone_number: true,
-        image: true,
-        active: true,
-        socketId: true,
-        admin: true
-      }
-    })
-
-    res.status(200).json({
-      data: users,
-      message: 'Users fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from users', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.post('/login', async (req, res) => {
-  const {
-    password,
-    email
-  } = req.body
-  try {
-    const usernameTaken = await prisma.user.findUnique({
-      where: {
-        email
-      }
-    })
-  
-    if (!usernameTaken) {
-      return res.status(400).json({
-        error: 'Invalid email'
-      })
-    }
-  
-    const passwordMatch = bcrypt.compareSync(password, usernameTaken.password)
-  
-    if (!passwordMatch) {
-      return res.status(400).json({
-        error: 'Invalid password'
-      })
-    }
-  
-    // res.cookie('userID', usernameTaken.id, { httpOnly: true, sameSite: 'none', secure: true })
-    res.status(200).json({
-      data: usernameTaken,
-      message: 'User logged in successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from login', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post('/register', async (req, res) => {
-  try {
-    const body = req.body
-    const { userID } = req.cookies || req.body
-    const { username, email, password, phone_number, image } = body
-
-    if (!username || !email || !password || !phone_number || !image) {
-      return res.status(400).json({ error: 'Missing fields' })
-    }
-
-    const userExists = await findUserByEmail(email)
-
-    if (userExists) {
-      // res.cookie('userID', userExists.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(201).json({
-        data: userExists,
-        message: 'User already exists',
-        success: true
-      })
-    }
-
-    if (userID) {
-      const user = await prisma.user.update({
-        where: {
-          id: userID
-        },
-        data: {
-          username,
-          email,
-          password,
-          phone_number,
-          image
-        }
-      })
-
-      // res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(201).json({
-        data: user,
-        message: 'User created successfully',
-        success: true
-      })
-    }
-
-    const user = await createNewUser({
-      username,
-      email,
-      password,
-      phone_number,
-      image
-    })
-
-    // res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
-    res.status(201).json({
-      data: user,
-      message: 'User created successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Errof from register', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/room/:roomID/messages', async (req, res) => {
-  const { roomID } = req.params
-  const splitRoomID = roomID.split('+')
-
-  try {
-    const room = await prisma.conversation.findUnique({
-      where: {
-        id: roomID
-      },
-      include: {
-        messages: {
-          select: {
-            id: true,
-            content: true,
-            content_type: true,
-            sender: {
-              select: {
-                id: true,
-                username: true,
-                image: true,
-                phone_number: true,
-                email: true
-              }
-            }
-          }
-        }
-      }
-    })
-
-    if (!room) {
-      let adminID = ''
-      
-      const user1 = await findUserByID(splitRoomID[0])
-
-      if (user1.admin) {
-        adminID = splitRoomID[0]
-      } else {
-        adminID = splitRoomID[1]
-      }
-
-      const newRoom = await prisma.conversation.create({
-        data: {
-          id: roomID,
-          members: {
-            connect: [
-              {
-                id: splitRoomID[0]
-              },
-              {
-                id: splitRoomID[1]
-              }
-            ]
-          }
-        }, include: {
-          messages: {
-            select: {
-              id: true,
-              content: true,
-              content_type: true,
-              sender: {
-                select: {
-                  id: true,
-                  username: true,
-                  image: true,
-                  phone_number: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
-      })
-
-      await prisma.message.create({
-        data: {
-          content: jsonData.salute + "\n\nAlso you can go to the products page to see the available products by clicking the buttons below.\n\n<button class='go-to-plates'>Go to plates</button>\n\n<button class='go-to-insurance'>Go to insurance</button>",
-          sender_id: adminID,
-          conversation_id: roomID,
-          content_type: "text"
-        },
-      })
-
-      return res.status(200).json({
-        data: newRoom,
-        message: 'Messages fetched successfully',
-        success: true
-      })
-    }
-
-    return res.status(200).json({
-      data: room,
-      message: 'Messages fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from room/:roomID/messages', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/changeIDS', async (req, res) => {
-  try {
-    const generatedIDS = []
-    for (let i = 0; i < 4; i++) {
-      generatedIDS.push(uuidv4())
-    }
-
-    return res.status(200).json({
-      data: generatedIDS,
-      message: 'IDS generated successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from changeIDS', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/products', async (req, res) => {
-  try {
-    const products = jsonData.states
-
-    return res.status(200).json({
-      data: products,
-      message: 'Products fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from products', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/purchases', async (req, res) => {
-  try {
-    const purchases = await prisma.purchasevisitor.findMany()
-    const purchasesFromPurchase = await prisma.purchase.findMany()
-
-    return res.status(200).json({
-      data: purchases.concat(purchasesFromPurchase),
-      message: 'Purchases fetched successfully',
-      success: true
-    })    
-  } catch (error) {
-    console.log('Error from purchaseByState', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
 
 app.get('/purchase/:id', async (req, res) => {
   const { id } = req.params
@@ -567,74 +249,6 @@ const generateClientToken = async () => {
   return handleResponse(response);
 };
 
-/**
- * Create an order to start the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
- */
-const createOrder = async (cart) => {
-  // use the cart information passed from the front-end to calculate the purchase unit details
-  console.log(
-    "shopping cart information passed from the frontend createOrder() callback:",
-    cart,
-  );
-
-  const accessToken = await generateAccessToken();
-  const url = `${base}/v2/checkout/orders`;
-  const payload = {
-    intent: "CAPTURE",
-    purchase_units: [
-      {
-        amount: {
-          currency_code: "USD",
-          value: cart[0].quantity,
-          breakdown: {
-            item_total: {
-              currency_code: "USD",
-              value: cart[0].quantity,
-            }
-          }
-        },
-        description: cart[0].description + " -  E-SHIPPING",
-        name: 'Order from Usatags',
-        shipping: {
-          method: "E-SHIPPING",
-        },
-        items: [
-          {
-            name: 'Order from Usatags',
-            quantity: '1',
-            category: 'DIGITAL_GOODS',
-            description: cart[0].description,
-            unit_amount: {
-              currency_code: "USD",
-              value: cart[0].quantity,
-            }
-          }
-        ]
-      },
-    ],
-    application_context: {
-      shipping_preference: "NO_SHIPPING",
-      brand_name: "Usatags",
-    }
-  }
-
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
-      // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
-      // "PayPal-Mock-Response": '{"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
-    },
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-
-  return handleResponse(response);
-};
 
 /**
  * Capture payment for the created order to complete the transaction.
@@ -795,248 +409,6 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-
-app.post('/createPlateCode', async (req, res) => {
-  try {
-    const {
-      tagName,
-      status,
-      tagIssueDate,
-      tagExpirationDate,
-      purchasedOrLeased,
-      customerType,
-      transferPlate,
-      vin,
-      vehicleYear,
-      vehicleMake,
-      vehicleModel,
-      vehicleBodyStyle,
-      tagType,
-      vehicleColor,
-      vehicleGVW,
-      dealerLicenseNumber,
-      dealerName,
-      dealerAddress,
-      dealerPhone,
-      dealerType,
-      hasBarcode,
-      hasQRCode,
-      state,
-      insuranceProvider,
-      isInsurance,
-      agentName,
-      policyNumber,
-      nameOwner,
-      address,
-      isTexas,
-
-      effectiveTimestamp,
-      verificationCode,
-      createTimestamp,
-      endTimestamp,
-      statusCode,
-      modelYear,
-      make,
-      dealerGDN,
-      dealerDBA,
-     } = req.body
-
-    //  console.log('req.body', {
-    //   tagName,
-    //   tagType,
-    //   effectiveTimestamp,
-    //   verificationCode,
-    //   createTimestamp,
-    //   endTimestamp,
-    //   statusCode,
-    //   vin,
-    //   modelYear,
-    //   make,
-    //   vehicleBodyStyle,
-    //   vehicleColor,
-    //   dealerGDN,
-    //   dealerName,
-    //   dealerDBA,
-    //   address,
-    //   isTexas
-    //  })
-    //  return res.status(200).json()
-
-    const findPlateByTag = await prisma.plateDetailsCodes.findMany({
-      where: {
-        tagName
-      }
-    })
-
-    if (findPlateByTag.length && !isInsurance && isTexas) {
-      return res.status(400).json({ error: 'Plate code already exists' })
-    }
-
-    if (isTexas) {
-      const plateCode = await prisma.plateDetailsCodes.create({
-        data: {
-          id: uuidv4(),
-          tagName,
-          status,
-          tagIssueDate,
-          tagExpirationDate,
-          purchasedOrLeased,
-          customerType,
-          transferPlate,
-          vin,
-          vehicleYear,
-          vehicleMake,
-          vehicleModel,
-          vehicleBodyStyle,
-          vehicleColor,
-          vehicleGVW,
-          dealerLicenseNumber,
-          dealerName,
-          dealerAddress,
-          tagType,
-          dealerPhone,
-          dealerType,
-          hasBarcode: true,
-          hasQRCode: true,
-          State: state,
-          insuranceProvider: insuranceProvider || '',
-          isInsurance: isInsurance || false,
-          agentName,
-          policyNumber,
-          nameOwner,
-          address,
-          effectiveTimestamp,
-          verificationCode,
-          createTimestamp,
-          endTimestamp,
-          statusCode,
-          dealerGDN,
-          dealerDBA,
-        }
-      })
-
-      return res.status(201).json({
-        data: plateCode,
-        message: 'Plate code created successfully',
-        success: true
-      })
-    }
-
-    if (findPlateByTag.length && !isInsurance) {
-      return res.status(400).json({ error: 'Plate code already exists' })
-    }
-
-    const findByPolicyNumber = await prisma.plateDetailsCodes.findMany({
-      where: {
-        policyNumber
-      }
-    })
-
-    if (findByPolicyNumber.length && isInsurance) {
-      return res.status(400).json({ error: 'Policy number already exists' })
-    }
-
-    const plateCode = await prisma.plateDetailsCodes.create({
-      data: {
-        id: uuidv4(),
-        tagName,
-        status,
-        tagIssueDate,
-        tagExpirationDate,
-        purchasedOrLeased,
-        customerType,
-        transferPlate,
-        vin,
-        vehicleYear,
-        vehicleMake,
-        vehicleModel,
-        vehicleBodyStyle,
-        vehicleColor,
-        vehicleGVW,
-        dealerLicenseNumber,
-        dealerName,
-        dealerAddress,
-        tagType,
-        dealerPhone,
-        dealerType,
-        hasBarcode: true,
-        hasQRCode: true,
-        State: state,
-        insuranceProvider: insuranceProvider || '',
-        isInsurance: isInsurance || false,
-        agentName,
-        policyNumber,
-        nameOwner,
-        address
-      }
-    })
-
-    res.status(201).json({
-      data: plateCode,
-      message: 'Plate code created successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from createPLateCode', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/plateDetailsCodes', async (req, res) => {
-  try {
-    const plateDetailsCodes = await prisma.plateDetailsCodes.findMany()
-
-    res.status(200).json({
-      data: plateDetailsCodes,
-      message: 'QR codes fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from plateDetailsCodes', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-
-app.get('/plateDetailsCodes/:tagName', async (req, res) => {
-  const { tagName } = req.params
-  try {
-    const plateDetailsCode = await prisma.plateDetailsCodes.findMany({
-      where: {
-        tagName
-      }
-    })
-
-    const vinSeach = await prisma.plateDetailsCodes.findMany({
-      where: {
-        vin: tagName
-      }
-    })
-
-    const policyNumberSearch = await prisma.plateDetailsCodes.findMany({
-      where: {
-        policyNumber: tagName
-      }
-    })
-
-    plateDetailsCode.push(...vinSeach)
-    plateDetailsCode.push(...policyNumberSearch)
-
-    if (!plateDetailsCode) {
-      return res.status(404).json({ error: 'Plate code not found' })
-    }
-
-    res.status(200).json({
-      data: plateDetailsCode[0],
-      message: 'Plate code fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from plateDetailsCodes/:tagName', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
 app.get('/env', async (req, res) => {
   try {
     const env = process.env
@@ -1058,1059 +430,6 @@ app.get('/env', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
-
-app.post('/purchaseFromFormConversation', async (req, res) => {
-  const { purchaseOption, data, room } = req.body
-  try {
-    if (purchaseOption === "0") {
-      await prisma.purchase.create({
-        data: {
-          vin: '',
-          color: '',
-          email: '',
-          details: '',
-          continuePurchase: true,
-          state: '',
-          conversation_id: data.conversationID,
-          user_id: data.senderID,
-          completed: false,
-          id: uuidv4(),
-          options: '',
-          address: '',
-          city: '',
-          zip: '',
-          phone: '',
-          driverLicense: '',
-          vehicleInsurance: '',
-          failedTries: 0,
-          cancelled: false,
-          houseType: '',
-          lastName: '',
-          name: '',
-          hasVehicleInSurance: '',
-          wantToGetVehicleInsurance: '',
-          isTruck: '',
-          total: 0,
-          image: '',
-          vehicleType: '',
-          buyingType: '',
-          paypalPaymentId: '',
-          insuranceType: '',
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "2"
-        })
-      })
-    } else if (purchaseOption === "2") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      const stateImage = jsonData.states.find((s) => s.state === data).id + '-' + data +'.webp'
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          state: data,
-          image: stateImage,
-          options: jsonData.states.filter((s) => s.state === data)[0].plates
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "3",
-          state: data,
-          options: jsonData.states.filter((s) => s.state === data)[0].plates
-        })
-      })
-    } else if (purchaseOption === "3") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      const price = data.split(' ')[data.split(' ').length - 1].split('$')[0]
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          details: data,
-          total: parseInt(price)
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "4"
-        })
-      })
-    } else if (purchaseOption === "4") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      const purchasePrice = allPurchases.filter((c) => c.conversation_id === room)[0].total
-      const vehicleTypeFee = ["Truck (+20$ fee)", "Bus (+20$ fee)", "Trailer (+20$ fee)"].includes(data) ? 20 : 0
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          vehicleType: data,
-          total: purchasePrice + vehicleTypeFee,
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "5"
-        })
-      })
-    } else if (purchaseOption === "5") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          name: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "6"
-        })
-      })
-    } else if (purchaseOption === "6") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          lastName: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "7"
-        })
-      })
-    } else if (purchaseOption === "7") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          address: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "8"
-        })
-      })
-    } else if (purchaseOption === "8") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          city: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "9"
-        })
-      })
-    } else if (purchaseOption === "9") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          houseType: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "10"
-        })
-      })
-    } else if (purchaseOption === "10") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          zip: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "11"
-        })
-      })
-    } else if (purchaseOption === "11") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          phone: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "12"
-        })
-      })
-    } else if (purchaseOption === "12") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          vin: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "13"
-        })
-      })
-    } else if (purchaseOption === "13") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          color: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "14"
-        })
-      })
-    } else if (purchaseOption === "14") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          email: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "15"
-        })
-      })
-    } else if (purchaseOption === "15") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      console.log('purchaseID', purchaseID, 'data', data)
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          driverLicense: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "16"
-        })
-      })
-    } else if (purchaseOption === "16") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          hasVehicleInSurance: data
-        }
-      }).then((purchase) => {
-        if (data === "yes") {
-          return res.status(200).json({
-            data: true,
-            currentStep: "18"
-          })
-        } else {
-          return res.status(200).json({
-            data: true,
-            currentStep: "17"
-          })
-        }
-      })
-    } else if (purchaseOption === "17") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          wantToGetVehicleInsurance: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "19",
-          purchaseID: purchaseID
-        })
-      })
-    } else if (purchaseOption === "18") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          vehicleInsurance: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "19",
-          purchaseID: purchaseID
-        })
-      })
-    } else if (purchaseOption === "19") {
-      const allPurchases = await prisma.purchase.findMany()
-      const purchaseID = allPurchases.filter((c) => c.conversation_id === room)[0].id
-      await prisma.purchase.update({
-        where: {
-          id: purchaseID
-        },
-        data: {
-          total: data
-        }
-      }).then((purchase) => {
-        return res.status(200).json({
-          data: true,
-          currentStep: "20"
-        })
-      })
-    }
-  } catch (error) {
-    console.log('Error from purchaseFromFormConversation', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get('/purchase/conversation/:id', async (req, res) => {
-  const { id } = req.params
-  try {
-    if (id) {
-      const purchaseS = await prisma.purchase.findMany()
-      const filteredByConversationID = purchaseS.filter((c) => c.conversation_id === id)
-      if (!filteredByConversationID.length || filteredByConversationID[0].completed) {
-        res.status(200).json({
-          data: false
-        })
-      } else {
-        if (!filteredByConversationID[0].state) {
-          res.status(200).json({
-            data: true,
-            currentStep: "2"
-          })
-        } else if (!filteredByConversationID[0].details) {
-          res.status(200).json({
-            data: true,
-            currentStep: "3",
-            state: filteredByConversationID[0].state,
-            options: jsonData.states.filter((s) => s.state === filteredByConversationID[0].state)[0].plates
-          })
-        } else if (!filteredByConversationID[0].vehicleType) {
-          res.status(200).json({
-            data: true,
-            currentStep: "4"
-          })
-        } else if (!filteredByConversationID[0].name) {
-          res.status(200).json({
-            data: true,
-            currentStep: "5"
-          })
-        } else if (!filteredByConversationID[0].lastName) {
-          res.status(200).json({
-            data: true,
-            currentStep: "6"
-          })
-        } else if (!filteredByConversationID[0].address) {
-          res.status(200).json({
-            data: true,
-            currentStep: "7"
-          })
-        } else if (!filteredByConversationID[0].city) {
-          res.status(200).json({
-            data: true,
-            currentStep: "8"
-          })
-        } else if (!filteredByConversationID[0].houseType) {
-          res.status(200).json({
-            data: true,
-            currentStep: "9"
-          })
-        } else if (!filteredByConversationID[0].zip) {
-          res.status(200).json({
-            data: true,
-            currentStep: "10"
-          })
-        } else if (!filteredByConversationID[0].phone) {
-          res.status(200).json({
-            data: true,
-            currentStep: "11"
-          })
-        } else if (!filteredByConversationID[0].vin) {
-          res.status(200).json({
-            data: true,
-            currentStep: "12"
-          })
-        } else if (!filteredByConversationID[0].color) {
-          res.status(200).json({
-            data: true,
-            currentStep: "13"
-          })
-        } else if (!filteredByConversationID[0].email) {
-          res.status(200).json({
-            data: true,
-            currentStep: "14"
-          })
-        } else if (!filteredByConversationID[0].driverLicense) {
-          res.status(200).json({
-            data: true,
-            currentStep: "15"
-          })
-        } else if (!filteredByConversationID[0].hasVehicleInSurance) {
-          res.status(200).json({
-            data: true,
-            currentStep: "16"
-          })
-        } else if (!filteredByConversationID[0].wantToGetVehicleInsurance) {
-          res.status(200).json({
-            data: true,
-            currentStep: "17"
-          })
-        } else if ((!filteredByConversationID[0].vehicleInsurance && filteredByConversationID[0].hasVehicleInSurance === 'yes') || (filteredByConversationID[0].hasVehicleInSurance === 'no' && filteredByConversationID[0].wantToGetVehicleInsurance === 'yes')) {
-          res.status(200).json({
-            data: true,
-            currentStep: "18"
-          })
-        } else if (!filteredByConversationID[0].completed) {
-          const purchaseID = filteredByConversationID[0].id
-          res.status(200).json({
-            data: true,
-            currentStep: "19",
-            purchaseID: purchaseID
-          })
-        }
-      }
-    } else {
-      return res.status(404).json({ error: 'Id no provided' })
-    }
-  } catch (error) {
-    console.log("Error from purchase conversation", error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.get("/auth/token", async (req, res) => {
-  const { userID } = req.cookies || req.body
-  try {
-    if (!userID) {
-      const newUser = await prisma.user.create({
-        data: {
-          id: uuidv4()
-        }
-      })
-
-      // res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(200).json({
-        data: true,
-        message: 'User fetched successfully',
-        success: true
-      })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userID
-      }
-    })
-
-    if (user) {
-      // res.cookie('userID', user.id, { httpOnly: true, sameSite: 'none', secure: true })
-      return res.status(200).json({
-        data: true,
-        message: 'User fetched successfully',
-        success: true
-      })
-    } else {
-      const newUser = await prisma.user.create({
-        data: {
-          id: uuidv4()
-        }
-      })
-
-      // res.cookie('userID', newUser.id, { httpOnly: true, sameSite: 'none', secure: true })
-    }
-
-    return res.status(200).json({
-      data: true,
-      message: 'User fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from auth/token', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.get("/cart", async (req, res) => {
-  const { userID } = req.cookies || req.body
-  try {
-    const cart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      },
-      include: {
-        products: true
-      }
-    })
-
-    if (!cart) {
-      const createCart = await prisma.shoppingCart.create({
-        data: {
-          userId: userID,
-          total: 0,
-          amount: 0,
-          products: {
-            create: []
-          }
-        }
-      })
-
-      return res.status(200).json({
-        data: createCart,
-        message: 'Cart fetched successfully',
-        success: true
-      })
-    }
-
-    res.status(200).json({
-      data: cart,
-      message: 'Cart fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.post("/cart", async (req, res) => {
-  const { userID } = req.cookies || req.body
-  try {
-
-    const findCart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      }
-    })
-
-    if (findCart) {
-      return res.status(400).json({
-        data: findCart,
-        message: 'Cart already exists',
-        success: false
-      })
-    }
-
-    const cart = await prisma.shoppingCart.create({
-      data: {
-        userId: userID,
-        total: 0,
-        amount: 0,
-        products: {
-          create: []
-        }
-      }
-    })
-    res.status(201).json({
-      data: cart,
-      message: 'Cart created successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.put("/cart/product", async (req, res) => {
-  const { product } = req.body
-  const { userID } = req.cookies || req.body
-  try {
-    const cart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      },
-      include: {
-        products: true
-      }
-    })
-
-    if (!cart) {
-      return res.status(404).json({ error: 'Cart not found' })
-    }
-
-    const productExists = cart.products.find((p) => p.name === product.name)
-
-    if (cart.products.length && productExists) {
-      if (productExists.description.includes(product.description)) {
-        return res.status(400).json({ error: 'Product already exists in cart' })
-      } else {
-        const productID = productExists.id
-        await prisma.product.update({
-          where: {
-            id: productID
-          },
-          data: {
-            description: product.description,
-            price: product.price,
-          }
-        })
-        await prisma.shoppingCart.update({
-          where: {
-            userId: userID
-          },
-          data: {
-            total: cart.total + product.price - productExists.price,
-          }
-        })
-
-        return res.status(200).json({
-          data: true,
-          message: 'Product updated successfully',
-          success: true
-        })
-      }
-    }
-
-    const updatedCart = await prisma.shoppingCart.update({
-      where: {
-        userId: userID
-      },
-      data: {
-        total: cart.total + product.price,
-        amount: cart.amount + 1,
-        products: {
-          create: {
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            description: product.description,
-            link: product.link,
-          }
-        }
-      },
-      include: {
-        products: true
-      }
-    })
-
-    res.status(200).json({
-      data: updatedCart,
-      message: 'Product added to cart successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart/product', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.delete("/cart/product/:productID", async (req, res) => {
-  const { productID } = req.params
-  const { userID } = req.cookies || req.body
-  try {
-    const cart = await prisma.shoppingCart.findUnique({
-      where: {
-        userId: userID
-      },
-      include: {
-        products: true
-      }
-    })
-
-    if (!cart) {
-      return res.status(404).json({ error: 'Cart not found' })
-    }
-
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productID
-      }
-    })
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' })
-    }
-
-    const updatedCart = await prisma.shoppingCart.update({
-      where: {
-        userId: userID
-      },
-      data: {
-        total: cart.total - product.price,
-        amount: cart.amount - 1,
-        products: {
-          delete: {
-            id: productID
-          }
-        }
-      },
-      include: {
-        products: true
-      }
-    })
-
-    res.status(200).json({
-      data: updatedCart,
-      message: 'Product removed from cart successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from cart/product', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.get('/auth/created', async (req, res) => {
-  const { userID } = req.cookies || req.body
-  try {
-    if (!userID) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userID
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    if (user.username && user.email) {
-      return res.status(200).json({
-        data: true,
-        message: 'User fetched successfully',
-        success: true
-      })
-    } else {
-      return res.status(200).json({
-        data: false,
-        message: 'User fetched successfully',
-        success: true
-      })
-    }
-  } catch (error) {
-    console.log('Error from auth/created', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/restore/password", async (req, res) => {
-  const { email } = req.body
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        email
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    const token = jwt.sign({ email, name: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' })
-
-    return res.status(200).json({
-      data: token,
-      message: 'Token generated successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from restore/password', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/restore/check", async (req, res) => {
-  const {token} = req.body
-  try {
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return res.status(400).json({ error: 'Invalid token' })
-      }
-
-      return res.status(200).json({
-        data: decoded,
-        message: 'Token verified successfully',
-        success: true
-      })
-    })
-  } catch (error) {
-    console.log('Error from restore/check', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/user/update", async (req, res) => {
-  const { email, newPassword } = req.body;
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        email
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(newPassword, salt)
-
-    await prisma.user.update({
-      where: {
-        email
-      },
-      data: {
-        password: hashedPassword
-      }
-    })
-
-    return res.status(200).json({
-      data: true,
-      message: 'User updated successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from user/update', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/codes/login", async (req, res) => {
-  const { email, password } = req.body
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        email
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' })
-    }
-
-    const validPassword = await bcrypt.compare(password, user.password)
-
-    if (!validPassword) {
-      return res.status(400).json({ error: 'Invalid password' })
-    }
-
-    const token = jwt.sign({ email, name: user.username }, process.env.JWT_SECRET, { expiresIn: '1d' })
-
-    return res.status(200).json({
-      data: token,
-      message: 'User logged in successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from codes/login', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/codes/verify", async (req, res) => {
-  const { token } = req.body
-  try {
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return res.status(200).json({
-          data: false,
-          message: 'Invalid token',
-          success: false
-        })
-      }
-
-      return res.status(200).json({
-        data: true,
-        message: 'Token verified successfully',
-        success: true
-      })
-    })
-  } catch (error) {
-    console.log('Error from codes/verify', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-});
-
-app.post("/codes/list" , async (req, res) => {
-  const { token } = req.body
-  try {
-    const validToken = jwt.verify(token, process.env.JWT_SECRET)
-
-    if (!validToken) {
-      return res.status(400).json({ error: 'Invalid token' })
-    }
-
-    const codes = await prisma.plateDetailsCodes.findMany()
-
-    return res.status(200).json({
-      data: codes,
-      message: 'Codes fetched successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from codes/list', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/codes/delete", async (req, res) => {
-  const { token, id } = req.body
-  try {
-    const validToken = jwt.verify(token, process.env.JWT_SECRET)
-
-    if (!validToken) {
-      return res.status(400).json({ error: 'Invalid token' })
-    }
-
-    const code = await prisma.plateDetailsCodes.findUnique({
-      where: {
-        id
-      }
-    })
-
-    if (!code) {
-      return res.status(404).json({ error: 'Code not found' })
-    }
-
-    await prisma.plateDetailsCodes.delete({
-      where: {
-        id
-      }
-    })
-
-    return res.status(200).json({
-      data: true,
-      message: 'Code deleted successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from codes/delete', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-app.post("/codes/update", async (req, res) => {
-  const { token, id, data } = req.body
-  console.log('data', data)
-  try {
-    const validToken = jwt.verify(token, process.env.JWT_SECRET)
-
-    if (!validToken) {
-      return res.status(400).json({ error: 'Invalid token' })
-    }
-
-    const code = await prisma.plateDetailsCodes.findUnique({
-      where: {
-        id
-      }
-    })
-
-    if (!code) {
-      return res.status(404).json({ error: 'Code not found' })
-    }
-
-    await prisma.plateDetailsCodes.update({
-      where: {
-        id
-      },
-      data: {
-        ...data,
-      }
-    })
-
-    return res.status(200).json({
-      data: true,
-      message: 'Code updated successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from codes/update', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-// const { parse } = require("csv-parse");
-// const fs = require('fs')
-// let count = 0
-// let pruchasesPerDates = {}
-// fs.createReadStream('../../Downloads/Purchase-p2.csv')
-// .pipe(parse({ delimiter: ",", from_line: 2 }))
-//   .on("data", async function (row) {
-
-//     // if (row[27]) {
-//     //   console.log('row', row[18], row[27])
-//     //   count += Number(row[18])
-//     // }
-//     // console.log('row', row[33])
-//     // if (row[33]) {
-//     //   if (row[27]) {
-//     //     const dd = new Date(row[33])
-//     //     pruchasesPerDates[dd.getDate()] = pruchasesPerDates[dd.getDate()] ? pruchasesPerDates[dd.getDate()] + 1 : 1
-//     //   }
-//     // }
-//     // console.log('row', row[20], row[17])
-//     if (row[17]) {
-//       console.log('row', row[20], row[17], row[26])
-//       count += Number(row[20])
-//     }
-//   })
-//   .on("end", function () {
-//     console.log(count)
-//     console.log("finished");
-//   })
-//   .on("error", function (error) {
-//     console.log(error.message);
-//   });
-
 
 const generateAccessToken2 = async () => {
   const response = await axios({
@@ -2199,152 +518,12 @@ app.post('/updatePurchase', async (req, res) => {
       return res.status(404).json({ error: 'Purchase not found' });
     }
 
-    // Prepare the email sending function
-    const sendEmail = async (purchaseDetails) => {
-      try {
-        const mailOptions = {
-          from: "alejo1garciasosa@gmail.com",
-          to: "usatagsus@gmail.com",
-          subject: `COMPRA DESDE - ${pFrom}`,
-          html: `
-          <!DOCTYPE html>
-          <html lang="es">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Detalles de la Compra</title>
-              <style>
-                  body {
-                      font-family: Arial, sans-serif;
-                      line-height: 1.6;
-                      margin: 0;
-                      padding: 20px;
-                      background-color: #f4f4f4;
-                  }
-                  .container {
-                      background-color: #ffffff;
-                      padding: 20px;
-                      border-radius: 8px;
-                      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                      max-width: 600px;
-                      margin: 0 auto;
-                  }
-                  h1 {
-                      color: #800080; /* Purple color */
-                      text-align: center;
-                      margin-bottom: 20px;
-                  }
-                  h2, h3 {
-                      color: #333333;
-                  }
-                  p {
-                      color: #555555;
-                      margin: 8px 0;
-                  }
-                  .section {
-                      margin-bottom: 20px;
-                  }
-                  img {
-                      max-width: 100%;
-                      height: auto;
-                      border: 1px solid #dddddd;
-                      border-radius: 4px;
-                      margin-bottom: 10px;
-                  }
-                  a {
-                      color: #007BFF;
-                      text-decoration: none;
-                  }
-                  a:hover {
-                      text-decoration: underline;
-                  }
-                  .footer {
-                      margin-top: 20px;
-                      text-align: center;
-                      color: #777777;
-                      font-size: 0.9em;
-                  }
-              </style>
-          </head>
-          <body>
-              <div class="container">
-  
-                  <h2>Detalles de la Compra</h2>
-                  <div class="section">
-                      <p><strong>Purchase ID:</strong> ${purchaseDetails.id}</p>
-                      <p><strong>Payment ID:</strong> ${purchaseDetails.paypalPaymentId}</p>
-                      <p><strong>Detalles:</strong> ${purchaseDetails.details}</p>
-                  </div>
-  
-                  <div class="section">
-                      <h3>Información Personal</h3>
-                      <p><strong>Nombre:</strong> ${purchaseDetails.name}</p>
-                      <p><strong>Apellido:</strong> ${purchaseDetails.lastName}</p>
-                      <p><strong>Email:</strong> ${purchaseDetails.email}</p>
-                      <p><strong>Estado:</strong> ${purchaseDetails.state}</p>
-                  </div>
-  
-                  <div class="section">
-                      <h3>Información del Vehículo</h3>
-                      <p><strong>VIN:</strong> ${purchaseDetails.vin}</p>
-                      <p><strong>Color:</strong> ${purchaseDetails.color}</p>
-                  </div>
-  
-                  <div class="section">
-                      <h3>Dirección</h3>
-                      <p><strong>Dirección:</strong> ${purchaseDetails.address}</p>
-                      <p><strong>Ciudad:</strong> ${purchaseDetails.city}</p>
-                      <p><strong>Tipo de Vivienda:</strong> ${purchaseDetails.houseType}</p>
-                      <p><strong>Tipo de Vehículo:</strong> ${purchaseDetails.vehicleType}</p>
-                      <p><strong>Tipo de Compra:</strong> ${purchaseDetails.purchaseType}</p>
-                      <p><strong>Código Postal:</strong> ${purchaseDetails.zip}</p>
-                  </div>
-  
-                  <div class="section">
-                      <h3>Contacto</h3>
-                      <p><strong>Teléfono:</strong> ${purchaseDetails.phone}</p>
-                  </div>
-  
-                  <div class="section">
-                      <h3>Licencia de Conducir</h3>
-                      <img src="${purchaseDetails.driverLicense}" alt="Foto de la Licencia de Conducir">
-                      <p><a href="${purchaseDetails.driverLicense}" target="_blank">Ver Licencia de Conducir</a></p>
-                  </div>
-  
-                  <div class="section">
-                      <h3>Seguro del Vehículo</h3>
-                      <p><strong>Seguro Proveedor:</strong> ${purchaseDetails.vehicleInsurance}</p>
-                  </div>
-  
-                  <div class="footer">
-                      <small>
-                        <a href="usatag.us" target="_blank">${purchaseDetails.comp}</a>
-                      </small>
-                  </div>
-              </div>
-          </body>
-          </html>
-        `,
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully');
-      } catch (error) {
-        console.error('Error sending email: ', error);
-        // We log the error but don't reject it to not block the main flow
-      }
-    };
-    
-    // Update the purchase in the database
-    const updatePurchase = await prisma.purchase.update({
-      where: { id: purchaseID },
-      data: { paypalPaymentId },
-    });
-
-    await sendEmail(updatePurchase);
+    await queue.add('complete-update', { purchaseID, paypalPaymentId, pFrom, purchase });
+    console.log('Job added to the queue');
 
     res.status(200).json({
-      data: updatePurchase,
+      // data: updatePurchase,
+      data: 'Job added to the queue',
       message: 'Purchase updated successfully',
       success: true
     });
@@ -2352,6 +531,163 @@ app.post('/updatePurchase', async (req, res) => {
     console.error('Error from updatePurchase', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+const worker = new Worker(
+  'complete-update',
+  async (job) => {
+    console.log("Processing job data:", job.data);
+    return job.data;
+  },
+  { connection: connectionConfig }
+);
+
+worker.on('completed', async (job) => {
+  console.log(`Job completed with result ${job.returnvalue}`);
+      // Prepare the email sending function
+      const sendEmail = async (purchaseDetails) => {
+        try {
+          const mailOptions = {
+            from: "alejo1garciasosa@gmail.com",
+            // to: "usatagsus@gmail.com",
+            to:'alejo1garciasosa@gmail.com',
+            subject: `COMPRA DESDE - ${job.returnvalue.pFrom}`,
+            html: `
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Detalles de la Compra</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        margin: 0;
+                        padding: 20px;
+                        background-color: #f4f4f4;
+                    }
+                    .container {
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        max-width: 600px;
+                        margin: 0 auto;
+                    }
+                    h1 {
+                        color: #800080; /* Purple color */
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    h2, h3 {
+                        color: #333333;
+                    }
+                    p {
+                        color: #555555;
+                        margin: 8px 0;
+                    }
+                    .section {
+                        margin-bottom: 20px;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                        border: 1px solid #dddddd;
+                        border-radius: 4px;
+                        margin-bottom: 10px;
+                    }
+                    a {
+                        color: #007BFF;
+                        text-decoration: none;
+                    }
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                    .footer {
+                        margin-top: 20px;
+                        text-align: center;
+                        color: #777777;
+                        font-size: 0.9em;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+    
+                    <h2>Detalles de la Compra</h2>
+                    <div class="section">
+                        <p><strong>Purchase ID:</strong> ${job.returnvalue.purchase.id}</p>
+                        <p><strong>Payment ID:</strong> ${job.returnvalue.purchase.paypalPaymentId}</p>
+                        <p><strong>Detalles:</strong> ${job.returnvalue.purchase.details}</p>
+                    </div>
+    
+                    <div class="section">
+                        <h3>Información Personal</h3>
+                        <p><strong>Nombre:</strong> ${job.returnvalue.purchase.name}</p>
+                        <p><strong>Apellido:</strong> ${job.returnvalue.purchase.lastName}</p>
+                        <p><strong>Email:</strong> ${job.returnvalue.purchase.email}</p>
+                        <p><strong>Estado:</strong> ${job.returnvalue.purchase.state}</p>
+                    </div>
+    
+                    <div class="section">
+                        <h3>Información del Vehículo</h3>
+                        <p><strong>VIN:</strong> ${job.returnvalue.purchase.vin}</p>
+                        <p><strong>Color:</strong> ${job.returnvalue.purchase.color}</p>
+                    </div>
+    
+                    <div class="section">
+                        <h3>Dirección</h3>
+                        <p><strong>Dirección:</strong> ${job.returnvalue.purchase.address}</p>
+                        <p><strong>Ciudad:</strong> ${job.returnvalue.purchase.city}</p>
+                        <p><strong>Tipo de Vivienda:</strong> ${job.returnvalue.purchase.houseType}</p>
+                        <p><strong>Tipo de Vehículo:</strong> ${job.returnvalue.purchase.vehicleType}</p>
+                        <p><strong>Tipo de Compra:</strong> ${job.returnvalue.purchase.purchaseType}</p>
+                        <p><strong>Código Postal:</strong> ${job.returnvalue.purchase.zip}</p>
+                    </div>
+    
+                    <div class="section">
+                        <h3>Contacto</h3>
+                        <p><strong>Teléfono:</strong> ${job.returnvalue.purchase.phone}</p>
+                    </div>
+    
+                    <div class="section">
+                        <h3>Licencia de Conducir</h3>
+                        <img src="${job.returnvalue.purchase.driverLicense}" alt="Foto de la Licencia de Conducir">
+                        <p><a href="${job.returnvalue.purchase.driverLicense}" target="_blank">Ver Licencia de Conducir</a></p>
+                    </div>
+    
+                    <div class="section">
+                        <h3>Seguro del Vehículo</h3>
+                        <p><strong>Seguro Proveedor:</strong> ${job.returnvalue.purchase.vehicleInsurance}</p>
+                    </div>
+    
+                    <div class="footer">
+                        <small>
+                          <a href="usatag.us" target="_blank">${job.returnvalue.purchase.comp}</a>
+                        </small>
+                    </div>
+                </div>
+            </body>
+            </html>
+          `,
+          };
+  
+          await transporter.sendMail(mailOptions);
+          console.log('Email sent successfully');
+        } catch (error) {
+          console.error('Error sending email: ', error);
+          // We log the error but don't reject it to not block the main flow
+        }
+      };
+      
+      // Update the purchase in the database
+      const updatePurchase = await prisma.purchase.update({
+        where: { id: job.returnvalue.purchaseID },
+        data: { paypalPaymentId :job.returnvalue.paypalPaymentId},
+      });
+  
+      await sendEmail(updatePurchase);
 });
 
 server.listen(port, () => {
