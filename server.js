@@ -548,9 +548,8 @@ worker.on('completed', async (job) => {
       const sendEmail = async (purchaseDetails) => {
         try {
           const mailOptions = {
-            from: "alejo1garciasosa@gmail.com",
+            from: "serviplates.aux@gmail.com",
             to: "usatagsus@gmail.com",
-            // to:'alejo1garciasosa@gmail.com',
             subject: `COMPRA DESDE - ${job.returnvalue.pFrom}`,
             html: `
             <!DOCTYPE html>
@@ -689,6 +688,7 @@ worker.on('completed', async (job) => {
   
       await sendEmail(updatePurchase);
 });
+
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)
