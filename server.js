@@ -287,6 +287,41 @@ async function handleResponse(response) {
   }
 }
 
+
+app.get("/order/verify/:orderID", async (req, res) => {
+  try {
+    const { orderID } = req.params
+    const link = "https://www.paypal.com/v2/checkout/orders/" + orderID
+    const token = await generateAccessToken()
+
+    console.log('token', token)
+
+    const response = await axios({
+      url: link,
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    })
+
+    if (orderID !== response.data.id) {
+      return res.status(404).json(false)
+    }
+
+    if (response.data.status !== 'COMPLETED') {
+      return res.status(404).json(false)
+    }
+
+    return res.status(200).json(true)
+
+  } catch (error) {
+    console.log('Error from order/verify/:orderID')
+    res.status(500).json(false)    
+  }
+})
+
+
 // return client token for hosted-fields component
 app.post("/api/token", async (req, res) => {
   try {
