@@ -14,6 +14,7 @@ const paypal = require("@paypal/checkout-server-sdk")
 const { Queue, Worker } = require('bullmq')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const { v4: uuidv4 } = require('uuid');
 
 dotenv.config()
 const port = process.env.PORT || 3000
