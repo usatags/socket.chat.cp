@@ -8,6 +8,9 @@ dependencies:
   '@libsql/client':
     specifier: ^0.4.3
     version: 0.4.3
+  '@paypal/checkout-server-sdk':
+    specifier: ^1.0.3
+    version: 1.0.3
   '@prisma/adapter-libsql':
     specifier: ^5.9.1
     version: 5.9.1(@libsql/client@0.4.3)
@@ -29,6 +32,9 @@ dependencies:
   express:
     specifier: ^4.18.2
     version: 4.18.2
+  nodemailer:
+    specifier: ^6.9.16
+    version: 6.9.16
   prisma:
     specifier: ^5.9.1
     version: 5.9.1
@@ -175,6 +181,19 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /@paypal/checkout-server-sdk@1.0.3:
+    resolution: {integrity: sha512-UEdq8akEdMz0Vs4qoQFU2gMp8PpyE/HKyMwiZuK4vIWUKl8jfd1fWKjQN5cDFm9NkFUIp5U7h++rdMOVj9WMNA==}
+    engines: {node: '>=8'}
+    deprecated: 'Package no longer supported. The author suggests using the @paypal/paypal-server-sdk package instead: https://www.npmjs.com/package/@paypal/paypal-server-sdk. Contact Support at https://www.npmjs.com/support for more info.'
+    dependencies:
+      '@paypal/paypalhttp': 1.0.1
+    dev: false
+
+  /@paypal/paypalhttp@1.0.1:
+    resolution: {integrity: sha512-DC7AHxTT7drF6dUi3YaFdPVuT15sIkpD5H2eHmdtFgxM4UanS1o1ZDfMhR9mpxd8o+X6pz2r+EZVRRq+n1cssQ==}
+    engines: {node: '>=4'}
+    dev: false
 
   /@prisma/adapter-libsql@5.9.1(@libsql/client@0.4.3):
     resolution: {integrity: sha512-bFBeHPMUeius4a2sfaaZdM2sERRpVdafeGukVBvcsOhYoozKoGg7lcPzm/rkCHIYC+Won7DtK8V+mdrEW49g+g==}
@@ -953,6 +972,11 @@ packages:
       data-uri-to-buffer: 4.0.1
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
+    dev: false
+
+  /nodemailer@6.9.16:
+    resolution: {integrity: sha512-psAuZdTIRN08HKVd/E8ObdV6NO7NTBY3KsC30F7M4H1OnmLCUNaS56FpYxyb26zWLSyYF9Ozch9KYHhHegsiOQ==}
+    engines: {node: '>=6.0.0'}
     dev: false
 
   /nopt@5.0.0:
