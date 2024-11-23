@@ -82,3 +82,17 @@ model PlateDetailsCodes {
   dealerGDN String?
   dealerDBA String?
 }
+
+model User {
+  id String @id @default(uuid())
+  username String?
+  email String? @unique
+  password String?
+  image String?
+  phone_number String?
+  socketId String?
+  active Boolean? @default(false)
+  admin Boolean? @default(false)
+  createdAt DateTime @default(now())
+}
+
