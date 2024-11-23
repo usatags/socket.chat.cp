@@ -1115,11 +1115,11 @@ worker.on('completed', async (job) => {
         }
       };
       
-      // Update the purchase in the database
-      const updatePurchase = await prisma.purchase.update({
-        where: { id: job.returnvalue.purchaseID },
-        data: { paypalPaymentId :job.returnvalue.paypalPaymentId},
-      });
+      // // Update the purchase in the database
+      // const updatePurchase = await prisma.purchase.update({
+      //   where: { id: job.returnvalue.purchaseID },
+      //   data: { paypalPaymentId :job.returnvalue.paypalPaymentId},
+      // });
   
       await sendEmail(updatePurchase);
 });
