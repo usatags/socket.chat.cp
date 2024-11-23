@@ -734,6 +734,247 @@ app.post("/codes/update", async (req, res) => {
   }
 })
 
+app.post('/createPlateCode', async (req, res) => {
+  try {
+    const {
+      tagName,
+      status,
+      tagIssueDate,
+      tagExpirationDate,
+      purchasedOrLeased,
+      customerType,
+      transferPlate,
+      vin,
+      vehicleYear,
+      vehicleMake,
+      vehicleModel,
+      vehicleBodyStyle,
+      tagType,
+      vehicleColor,
+      vehicleGVW,
+      dealerLicenseNumber,
+      dealerName,
+      dealerAddress,
+      dealerPhone,
+      dealerType,
+      hasBarcode,
+      hasQRCode,
+      state,
+      insuranceProvider,
+      isInsurance,
+      agentName,
+      policyNumber,
+      nameOwner,
+      address,
+      isTexas,
+
+      effectiveTimestamp,
+      verificationCode,
+      createTimestamp,
+      endTimestamp,
+      statusCode,
+      modelYear,
+      make,
+      dealerGDN,
+      dealerDBA,
+     } = req.body
+
+    //  console.log('req.body', {
+    //   tagName,
+    //   tagType,
+    //   effectiveTimestamp,
+    //   verificationCode,
+    //   createTimestamp,
+    //   endTimestamp,
+    //   statusCode,
+    //   vin,
+    //   modelYear,
+    //   make,
+    //   vehicleBodyStyle,
+    //   vehicleColor,
+    //   dealerGDN,
+    //   dealerName,
+    //   dealerDBA,
+    //   address,
+    //   isTexas
+    //  })
+    //  return res.status(200).json()
+
+    const findPlateByTag = await prisma.plateDetailsCodes.findMany({
+      where: {
+        tagName
+      }
+    })
+
+    if (findPlateByTag.length && !isInsurance && isTexas) {
+      return res.status(400).json({ error: 'Plate code already exists' })
+    }
+
+    if (isTexas) {
+      const plateCode = await prisma.plateDetailsCodes.create({
+        data: {
+          id: uuidv4(),
+          tagName,
+          status,
+          tagIssueDate,
+          tagExpirationDate,
+          purchasedOrLeased,
+          customerType,
+          transferPlate,
+          vin,
+          vehicleYear,
+          vehicleMake,
+          vehicleModel,
+          vehicleBodyStyle,
+          vehicleColor,
+          vehicleGVW,
+          dealerLicenseNumber,
+          dealerName,
+          dealerAddress,
+          tagType,
+          dealerPhone,
+          dealerType,
+          hasBarcode: true,
+          hasQRCode: true,
+          State: state,
+          insuranceProvider: insuranceProvider || '',
+          isInsurance: isInsurance || false,
+          agentName,
+          policyNumber,
+          nameOwner,
+          address,
+          effectiveTimestamp,
+          verificationCode,
+          createTimestamp,
+          endTimestamp,
+          statusCode,
+          dealerGDN,
+          dealerDBA,
+        }
+      })
+
+      return res.status(201).json({
+        data: plateCode,
+        message: 'Plate code created successfully',
+        success: true
+      })
+    }
+
+    if (findPlateByTag.length && !isInsurance) {
+      return res.status(400).json({ error: 'Plate code already exists' })
+    }
+
+    const findByPolicyNumber = await prisma.plateDetailsCodes.findMany({
+      where: {
+        policyNumber
+      }
+    })
+
+    if (findByPolicyNumber.length && isInsurance) {
+      return res.status(400).json({ error: 'Policy number already exists' })
+    }
+
+    const plateCode = await prisma.plateDetailsCodes.create({
+      data: {
+        id: uuidv4(),
+        tagName,
+        status,
+        tagIssueDate,
+        tagExpirationDate,
+        purchasedOrLeased,
+        customerType,
+        transferPlate,
+        vin,
+        vehicleYear,
+        vehicleMake,
+        vehicleModel,
+        vehicleBodyStyle,
+        vehicleColor,
+        vehicleGVW,
+        dealerLicenseNumber,
+        dealerName,
+        dealerAddress,
+        tagType,
+        dealerPhone,
+        dealerType,
+        hasBarcode: true,
+        hasQRCode: true,
+        State: state,
+        insuranceProvider: insuranceProvider || '',
+        isInsurance: isInsurance || false,
+        agentName,
+        policyNumber,
+        nameOwner,
+        address
+      }
+    })
+
+    res.status(201).json({
+      data: plateCode,
+      message: 'Plate code created successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from createPLateCode', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.get('/plateDetailsCodes', async (req, res) => {
+  try {
+    const plateDetailsCodes = await prisma.plateDetailsCodes.findMany()
+
+    res.status(200).json({
+      data: plateDetailsCodes,
+      message: 'QR codes fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from plateDetailsCodes', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+
+app.get('/plateDetailsCodes/:tagName', async (req, res) => {
+  const { tagName } = req.params
+  try {
+    const plateDetailsCode = await prisma.plateDetailsCodes.findMany({
+      where: {
+        tagName
+      }
+    })
+
+    const vinSeach = await prisma.plateDetailsCodes.findMany({
+      where: {
+        vin: tagName
+      }
+    })
+
+    const policyNumberSearch = await prisma.plateDetailsCodes.findMany({
+      where: {
+        policyNumber: tagName
+      }
+    })
+
+    plateDetailsCode.push(...vinSeach)
+    plateDetailsCode.push(...policyNumberSearch)
+
+    if (!plateDetailsCode) {
+      return res.status(404).json({ error: 'Plate code not found' })
+    }
+
+    res.status(200).json({
+      data: plateDetailsCode[0],
+      message: 'Plate code fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from plateDetailsCodes/:tagName', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 
 worker.on('completed', async (job) => {
   console.log(`Job completed with result ${job.returnvalue}`);
