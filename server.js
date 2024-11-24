@@ -19,14 +19,6 @@ const { v4: uuidv4 } = require('uuid');
 dotenv.config()
 const port = process.env.PORT || 3000
 
-const redisUrl = 'rediss://red-csn3tuggph6c73fso5ig:JhVHXy4fJIYPCs3070L2ShQj5wjTT46u@oregon-redis.render.com:6379';
-
-const connectionConfig = {
-  url: redisUrl,
-};
-
-const queue = new Queue('complete-update', { connection: connectionConfig });
-
 const libsql = createClient({
   url: process.env.TURSO_DATABASE_URL || '',
   authToken: process.env.TURSO_AUTH_TOKEN || '',
@@ -35,12 +27,10 @@ const libsql = createClient({
 const adapter = new PrismaLibSQL(libsql);
 const prisma = new PrismaClient({ adapter })
 
-// const base = "https://api-m.sandbox.paypal.com";
-const base = "https://www.paypal.com";
-// const paypalEnvironment = new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
-const paypalEnvironment = new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+// const environment = new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+const environment = new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
 
-const paypalClientWithRefreshToken = new paypal.core.PayPalHttpClient(paypalEnvironment)
+const paypalClient = new paypal.core.PayPalHttpClient(environment);
 
 const app = express()
 
@@ -206,246 +196,244 @@ app.post("/createPurchase", async (req, res) => {
   }
 })
 
-const generateAccessToken = async () => {
+// Create order endpoint
+app.post('/create-order', async (req, res) => {
   try {
-    console.log(!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET)
-    if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
-      throw new Error("MISSING_API_CREDENTIALS");
-    }
-    const auth = Buffer.from(
-      process.env.PAYPAL_CLIENT_ID + ":" + process.env.PAYPAL_CLIENT_SECRET,
-    ).toString("base64");
-
-    const response = await fetch(`${base}/v1/oauth2/token`, {
-      method: "POST",
-      body: "grant_type=client_credentials",
-      headers: {
-        Authorization: `Basic ${auth}`,
-      },
+    const { amount, currency } = req.body;
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{ amount: { currency_code: currency, value: amount } }],
     });
 
-
-    const data = await response.json();
-    return data.access_token;
+    const order = await paypalClient.execute(request);
+    res.status(200).json({ id: order.result.id });
   } catch (error) {
-    console.error("Failed to generate Access Token:", error);
+    console.error('Error creating PayPal order:', error);
+    res.status(500).json({ error: 'Error creating PayPal order' });
   }
-};
+});
 
-/**
- * Generate a client token for rendering the hosted card fields.
- * @see https://developer.paypal.com/docs/checkout/advanced/integrate/#link-integratebackend
- */
-const generateClientToken = async () => {
-  const accessToken = await generateAccessToken();
-  const url = `${base}/v1/identity/generate-token`;
-  console.log('accessToken', accessToken)
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Accept-Language": "en_US",
-      "Content-Type": "application/json",
-    },
-  });
-
-  return handleResponse(response);
-};
-
-
-/**
- * Capture payment for the created order to complete the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
- */
-const captureOrder = async (orderID) => {
-  const accessToken = await generateAccessToken();
-  const url = `${base}/v2/checkout/orders/${orderID}/capture`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
-      // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
-      // "PayPal-Mock-Response": '{"mock_application_codes": "INSTRUMENT_DECLINED"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "TRANSACTION_REFUSED"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
-    },
-  });
-
-  return handleResponse(response);
-};
-
-async function handleResponse(response) {
+// Capture order endpoint
+app.post('/capture-order', async (req, res) => {
   try {
-    const jsonResponse = await response.json();
-    return {
-      jsonResponse,
-      httpStatusCode: response.status,
-    };
-  } catch (err) {
-    const errorMessage = await response.text();
-    throw new Error(errorMessage);
+    const { orderId, purchaseType,
+      vin,
+      color,
+      email,
+      state,
+      name,
+      lastName,
+      address,
+      city,
+      houseType,
+      zip,
+      phone,
+      driverLicense,
+      details,
+      hasFee,
+      isInsurance,
+      total,
+      optionSelectedPlate,
+      optionSelectedInsurance,
+      insurancePrice,
+      insuranceProvider,
+      image,
+      vehicleInsurance,
+      vehicleType,
+      saleBill, } = req.body;
+
+    const request = new paypal.orders.OrdersCaptureRequest(orderId);
+    request.requestBody({});
+    const capture = await paypalClient.execute(request);
+
+    // Imprimir la respuesta completa de PayPal
+    // console.log('Capture response:', JSON.stringify(capture.result, null, 2));
+
+    const purchaseUnit = capture.result?.purchase_units?.[0];
+    const amount = purchaseUnit.payments.captures[0].amount.value
+
+    // console.log('Capture amount:', amount,);
+    // console.log('Capture status:', capture);
+
+    if (!amount) {
+      return res.status(400).json({ error: 'Payment information is incomplete or missing' });
+    }
+
+    if (capture.result.status === 'COMPLETED') {
+      const additionalData = {
+        purchaseType,
+        vin,
+        color,
+        email,
+        state,
+        name,
+        lastName,
+        address,
+        city,
+        houseType,
+        zip,
+        phone,
+        driverLicense,
+        details,
+        hasFee,
+        isInsurance,
+        total,
+        optionSelectedPlate,
+        optionSelectedInsurance,
+        insurancePrice,
+        insuranceProvider,
+        image,
+        vehicleInsurance,
+        vehicleType,
+        saleBill,
+      }
+      
+      await sendEmail(email, amount, additionalData);
+      return res.status(200).json({ message: 'Payment completed and email sent' });
+    } else {
+      return res.status(400).json({ error: 'Payment not completed' });
+    }
+  } catch (error) {
+    console.error('Error capturing PayPal order:', error.message);
+    res.status(500).json({ error: 'Error capturing PayPal order' });
+  }
+});
+
+// Email sending function
+async function sendEmail(email, amount, additionalData) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Detalles de la Compra</title>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              margin: 0;
+              padding: 20px;
+              background-color: #f4f4f4;
+          }
+          .container {
+              background-color: #ffffff;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+              max-width: 600px;
+              margin: 0 auto;
+          }
+          h1 {
+              color: #800080;
+              text-align: center;
+              margin-bottom: 20px;
+          }
+          h2, h3 {
+              color: #333333;
+          }
+          p {
+              color: #555555;
+              margin: 8px 0;
+          }
+          .section {
+              margin-bottom: 20px;
+          }
+          img {
+              max-width: 100%;
+              height: auto;
+              border: 1px solid #dddddd;
+              border-radius: 4px;
+              margin-bottom: 10px;
+          }
+          a {
+              color: #007BFF;
+              text-decoration: none;
+          }
+          a:hover {
+              text-decoration: underline;
+          }
+          .footer {
+              margin-top: 20px;
+              text-align: center;
+              color: #777777;
+              font-size: 0.9em;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <h2>Detalles de la Compra</h2>
+          <div class="section">
+              <p><strong>Purchase ID:</strong> ${additionalData.purchaseId || "N/A"}</p>
+              <p><strong>Detalles:</strong> ${additionalData.details || "N/A"}</p>
+          </div>
+          <div class="section">
+              <h3>Información Personal</h3>
+              <p><strong>Nombre:</strong> ${additionalData.name}</p>
+              <p><strong>Apellido:</strong> ${additionalData.lastName}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Estado:</strong> ${additionalData.state}</p>
+          </div>
+          <div class="section">
+              <h3>Información del Vehículo</h3>
+              <p><strong>VIN:</strong> ${additionalData.vin}</p>
+              <p><strong>Color:</strong> ${additionalData.color}</p>
+          </div>
+          <div class="section">
+              <h3>Dirección</h3>
+              <p><strong>Dirección:</strong> ${additionalData.address}</p>
+              <p><strong>Ciudad:</strong> ${additionalData.city}</p>
+              <p><strong>Tipo de Vivienda:</strong> ${additionalData.houseType}</p>
+              <p><strong>Tipo de Vehículo:</strong> ${additionalData.vehicleType}</p>
+              <p><strong>Código Postal:</strong> ${additionalData.zip}</p>
+          </div>
+          <div class="section">
+              <h3>Contacto</h3>
+              <p><strong>Teléfono:</strong> ${additionalData.phone}</p>
+          </div>
+          <div class="section">
+              <h3>Licencia de Conducir</h3>
+              <img src="${additionalData.driverLicense}" alt="Foto de la Licencia de Conducir">
+              <p><a href="${additionalData.driverLicense}" target="_blank">Ver Licencia de Conducir</a></p>
+          </div>
+          <div class="section">
+              <h3>Seguro del Vehículo</h3>
+              <p><strong>Seguro Proveedor:</strong> ${additionalData.insuranceProvider}</p>
+          </div>
+          <div class="footer">
+              <small>
+                  <a href="usatag.us" target="_blank">usatag.us</a>
+              </small>
+          </div>
+      </div>
+  </body>
+  </html>
+    `;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: 'usatagsus@gmail.com',
+    subject: 'Payment Confirmation',
+    html: htmlContent
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
   }
 }
-
-
-app.get("/order/verify/:orderID", async (req, res) => {
-  try {
-    const { orderID } = req.params
-    const link = "https://www.paypal.com/v2/checkout/orders/" + orderID
-    const token = await generateAccessToken()
-
-    console.log('token', token)
-
-    const response = await axios({
-      url: link,
-      method: 'get',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      }
-    })
-
-    if (orderID !== response.data.id) {
-      return res.status(404).json(false)
-    }
-
-    if (response.data.status !== 'COMPLETED') {
-      return res.status(404).json(false)
-    }
-
-    return res.status(200).json(true)
-
-  } catch (error) {
-    console.log('Error from order/verify/:orderID')
-    res.status(500).json(false)    
-  }
-})
-
-
-// return client token for hosted-fields component
-app.post("/api/token", async (req, res) => {
-  try {
-    const { jsonResponse, httpStatusCode } = await generateClientToken();
-    res.status(httpStatusCode).json(jsonResponse);
-  } catch (error) {
-    console.error("Failed to generate client token:", error);
-    res.status(500).send({ error: "Failed to generate client token." });
-  }
-});
-
-app.post("/api/orders", async (req, res) => {
-  try {
-    // use the cart information passed from the front-end to calculate the order amount detals
-    const { cart } = req.body;
-    console.log(cart);
-    // const { jsonResponse, httpStatusCode } = await createOrder(cart);
-    // res.status(httpStatusCode).json(jsonResponse);
-    const orderRequest = new paypal.orders.OrdersCreateRequest();
-
-    orderRequest.requestBody({
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          amount: {
-            currency_code: "USD",
-            value: cart[0].quantity,
-            breakdown: {
-              item_total: {
-                currency_code: "USD",
-                value: cart[0].quantity,
-              }
-            }
-          },
-          description: cart[0].description + " -  E-SHIPPING",
-          name: 'Order from Usatags',
-          shipping: {
-            method: "E-SHIPPING",
-          },
-          items: [
-            {
-              name: 'Order from Usatags',
-              quantity: '1',
-              category: 'DIGITAL_GOODS',
-              description: cart[0].description,
-              unit_amount: {
-                currency_code: "USD",
-                value: cart[0].quantity,
-              }
-            }
-          ]
-        },
-      ],
-      application_context: {
-        shipping_preference: "NO_SHIPPING",
-        brand_name: "Usatags",
-      }
-    })
-
-    const orderResponse = await paypalClientWithRefreshToken.execute(orderRequest);
-    return res.status(200).json(orderResponse.result);
-  } catch (error) {
-    console.error("Failed to create order:", error);
-    res.status(500).json({ error: "Failed to create order." });
-  }
-});
-
-app.post("/api/orders/:orderID/capture", async (req, res) => {
-  try {
-    const { orderID } = req.params;
-    const { jsonResponse, httpStatusCode } = await captureOrder(orderID);
-    res.status(httpStatusCode).json(jsonResponse);
-  } catch (error) {
-    console.error("Failed to create order:", error);
-    res.status(500).json({ error: "Failed to capture order." });
-  }
-});
-
-//Boton del seguro click aquí e ir al chat
-
-
-app.post('/completePurchase', async (req, res) => {
-  try {
-    const { purchaseID } = req.body
-    const purchase = await prisma.purchase.findUnique({
-      where: {
-        id: purchaseID
-      },
-    })
-
-    if (!purchase) {
-      return res.status(404).json({ error: 'Purchase not found' })
-    }
-
-    await prisma.purchase.update({
-      where: {
-        id: purchaseID
-      },
-      data: {
-        completed: true
-      }
-    })
-
-    res.status(200).json({
-      data: purchase,
-      message: 'Purchase completed successfully',
-      success: true
-    })
-  } catch (error) {
-    console.log('Error from completePurchase', error)
-    res.status(500).json({ error: 'Internal server error' })
-  }
-}) 
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || '',
-    pass: process.env.EMAIL_PASSWORD || ''
-  }
-})
 
 app.get('/env', async (req, res) => {
   try {
@@ -466,80 +454,6 @@ app.get('/env', async (req, res) => {
   } catch (error) {
     console.log('Error from env', error)
     res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
-const generateAccessToken2 = async () => {
-  const response = await axios({
-    url: base + '/v1/oauth2/token',
-    method: 'post',
-    data: 'grant_type=client_credentials',
-    auth: {
-        username: process.env.PAYPAL_CLIENT_ID,
-        password: process.env.PAYPAL_SECRET
-    }
-})
-
-return response.data.access_token
-}
-
-/**
- * Create an order to start the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
- */
-const createOrder2 = async (cart, return_url, cancel_url) => {
-  const accessToken = await generateAccessToken2()
-
-  const response = await axios({
-      url: base + '/v2/checkout/orders',
-      method: 'post',
-      headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + accessToken
-      },
-      data: JSON.stringify({
-          intent: "CAPTURE",
-          purchase_units: [
-            {
-              amount: {
-                currency_code: "USD",
-                value: cart[0].quantity,
-              },
-              description: cart[0].description + " -  E-SHIPPING",
-              name: 'Order from Usatags',
-              shipping: {
-                method: "E-SHIPPING",
-              }
-            },
-          ],
-          payment_source: {
-            paypal: {
-              brand_name: "Usatags",
-              shipping_preference: "E_SHIPPING"
-            }
-          },
-          application_context: {
-            brand_name: "Usatags",
-            user_action: "PAY_NOW",
-            shipping_preference: "NO_SHIPPING",
-            return_url,
-            cancel_url,
-          }
-        })
-  })
-
-  console.log(response.data.id)
-  return response.data.links.find(link => link.rel === 'payer-action').href
-};
-
-
-
-app.post("/pay", async (req, res) => {
-  try {
-    const url = await createOrder2(req.body.cart, req.body.return_url, req.body.cancel_url);
-    res.status(200).json({ url });
-  } catch (error) {
-    console.log('Error from pay', error)
   }
 })
 
@@ -570,16 +484,6 @@ app.post('/updatePurchase', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-const worker = new Worker(
-  'complete-update',
-  async (job) => {
-    console.log("Processing job data:", job.data);
-    return job.data;
-  },
-  { connection: connectionConfig }
-);
-
 
 app.post("/codes/login", async (req, res) => {
   const { email, password } = req.body
@@ -975,155 +879,6 @@ app.get('/plateDetailsCodes/:tagName', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
-
-
-worker.on('completed', async (job) => {
-  console.log(`Job completed with result ${job.returnvalue}`);
-      // Prepare the email sending function
-      const sendEmail = async (purchaseDetails) => {
-        try {
-          const mailOptions = {
-            from: "serviplates.aux@gmail.com",
-            to: "usatagsus@gmail.com",
-            subject: `COMPRA DESDE - ${job.returnvalue.pFrom}`,
-            html: `
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Detalles de la Compra</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.6;
-                        margin: 0;
-                        padding: 20px;
-                        background-color: #f4f4f4;
-                    }
-                    .container {
-                        background-color: #ffffff;
-                        padding: 20px;
-                        border-radius: 8px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        max-width: 600px;
-                        margin: 0 auto;
-                    }
-                    h1 {
-                        color: #800080; /* Purple color */
-                        text-align: center;
-                        margin-bottom: 20px;
-                    }
-                    h2, h3 {
-                        color: #333333;
-                    }
-                    p {
-                        color: #555555;
-                        margin: 8px 0;
-                    }
-                    .section {
-                        margin-bottom: 20px;
-                    }
-                    img {
-                        max-width: 100%;
-                        height: auto;
-                        border: 1px solid #dddddd;
-                        border-radius: 4px;
-                        margin-bottom: 10px;
-                    }
-                    a {
-                        color: #007BFF;
-                        text-decoration: none;
-                    }
-                    a:hover {
-                        text-decoration: underline;
-                    }
-                    .footer {
-                        margin-top: 20px;
-                        text-align: center;
-                        color: #777777;
-                        font-size: 0.9em;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-    
-                    <h2>Detalles de la Compra</h2>
-                    <div class="section">
-                        <p><strong>Purchase ID:</strong> ${job.returnvalue.purchase.id}</p>
-                        <p><strong>Payment ID:</strong> ${job.returnvalue.purchase.paypalPaymentId}</p>
-                        <p><strong>Detalles:</strong> ${job.returnvalue.purchase.details}</p>
-                    </div>
-    
-                    <div class="section">
-                        <h3>Información Personal</h3>
-                        <p><strong>Nombre:</strong> ${job.returnvalue.purchase.name}</p>
-                        <p><strong>Apellido:</strong> ${job.returnvalue.purchase.lastName}</p>
-                        <p><strong>Email:</strong> ${job.returnvalue.purchase.email}</p>
-                        <p><strong>Estado:</strong> ${job.returnvalue.purchase.state}</p>
-                    </div>
-    
-                    <div class="section">
-                        <h3>Información del Vehículo</h3>
-                        <p><strong>VIN:</strong> ${job.returnvalue.purchase.vin}</p>
-                        <p><strong>Color:</strong> ${job.returnvalue.purchase.color}</p>
-                    </div>
-    
-                    <div class="section">
-                        <h3>Dirección</h3>
-                        <p><strong>Dirección:</strong> ${job.returnvalue.purchase.address}</p>
-                        <p><strong>Ciudad:</strong> ${job.returnvalue.purchase.city}</p>
-                        <p><strong>Tipo de Vivienda:</strong> ${job.returnvalue.purchase.houseType}</p>
-                        <p><strong>Tipo de Vehículo:</strong> ${job.returnvalue.purchase.vehicleType}</p>
-                        <p><strong>Tipo de Compra:</strong> ${job.returnvalue.purchase.purchaseType}</p>
-                        <p><strong>Código Postal:</strong> ${job.returnvalue.purchase.zip}</p>
-                    </div>
-    
-                    <div class="section">
-                        <h3>Contacto</h3>
-                        <p><strong>Teléfono:</strong> ${job.returnvalue.purchase.phone}</p>
-                    </div>
-    
-                    <div class="section">
-                        <h3>Licencia de Conducir</h3>
-                        <img src="${job.returnvalue.purchase.driverLicense}" alt="Foto de la Licencia de Conducir">
-                        <p><a href="${job.returnvalue.purchase.driverLicense}" target="_blank">Ver Licencia de Conducir</a></p>
-                    </div>
-    
-                    <div class="section">
-                        <h3>Seguro del Vehículo</h3>
-                        <p><strong>Seguro Proveedor:</strong> ${job.returnvalue.purchase.vehicleInsurance}</p>
-                    </div>
-    
-                    <div class="footer">
-                        <small>
-                          <a href="usatag.us" target="_blank">${job.returnvalue.purchase.comp}</a>
-                        </small>
-                    </div>
-                </div>
-            </body>
-            </html>
-          `,
-          };
-  
-          await transporter.sendMail(mailOptions);
-          console.log('Email sent successfully');
-        } catch (error) {
-          console.error('Error sending email: ', error);
-          // We log the error but don't reject it to not block the main flow
-        }
-      };
-      
-      // // Update the purchase in the database
-      // const updatePurchase = await prisma.purchase.update({
-      //   where: { id: job.returnvalue.purchaseID },
-      //   data: { paypalPaymentId :job.returnvalue.paypalPaymentId},
-      // });
-  
-      await sendEmail(updatePurchase);
-});
-
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)
