@@ -93,6 +93,30 @@ app.all('*', function(req, res, next) {
   next();
 });
 
+app.get('/purchase/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!purchase) {
+      return res.status(404).json({ error: 'Purchase not found' })
+    }
+
+    res.status(200).json({
+      data: purchase,
+      message: 'Purchase fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from purchase/:id', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 app.post("/createPurchase", async (req, res) => {
   const {
     purchaseType,
