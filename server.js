@@ -287,6 +287,7 @@ app.post('/capture-order', async (req, res) => {
         vehicleInsurance,
         vehicleType,
         saleBill,
+        dateSS
       }
       
       await sendEmail(email, amount, additionalData);
@@ -423,7 +424,7 @@ async function sendEmail(email, amount, additionalData) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: 'usatagsus@gmail.com',
-    subject: 'Payment Confirmation',
+    subject: additionalData.dateSS,
     html: htmlContent
   };
 
