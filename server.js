@@ -140,7 +140,7 @@ app.post("/createPurchase", async (req, res) => {
 
   try {
     // console.log('req.body', req.body)
-    if (state.includes("New Jersey") && !isInsurance) {
+    if (state && !isInsurance) {
       if (!vehicleInsurance && !insuranceProvider) {
         return res.status(400).json({
           error: 'Missing vehicle insurance or insurance provider'
