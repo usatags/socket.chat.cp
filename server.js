@@ -64,6 +64,17 @@ app.use((err, req, res, next) => {
 
 const server = Server(app)
 
+// const lastAutoMessages = []
+const regexForVIN = /^[a-zA-Z0-9]{17}$/;
+const regexForEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+const regexForName = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u
+const regexForAddress = /^[a-zA-Z0-9\s,.'-]+$/
+const regexForCity = /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$/
+const regexForZip = /^[0-9]{5}(?:-[0-9]{4})?$/
+const regexForNumber = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/
+const regexForDriverLicense = /(\.jpg|\.jpeg|\.png|\.webp|\.pdf|\.ai)$/i;
+
+
 app.all('*', function(req, res, next) {
   var start = process.hrtime();
 
@@ -78,27 +89,25 @@ app.all('*', function(req, res, next) {
 });
 
 app.get('/purchase/:id', async (req, res) => {
-  const { id } = req.params
   try {
+    const { id } = req.params
     const purchase = await prisma.purchase.findUnique({
       where: {
         id
       }
     })
 
-    if (purchase) {
-      return res.status(200).json({
-        data: purchase,
-        message: 'Purchase fetched successfully',
-        success: true
-      })
-    } else {
-      return res.status(404).json({
-        error: 'Purchase not found'
-      })
+    if (!purchase) {
+      return res.status(404).json({ error: 'Purchase not found' })
     }
+
+    res.status(200).json({
+      data: purchase,
+      message: 'Purchase fetched successfully',
+      success: true
+    })
   } catch (error) {
-    console.log('Error from Purchase/:id', error)
+    console.log('Error from purchase/:id', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
@@ -240,6 +249,75 @@ const generateClientToken = async () => {
 };
 
 /**
+ * Create an order to start the transaction.
+ * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
+ */
+const createOrder = async (cart) => {
+  // use the cart information passed from the front-end to calculate the purchase unit details
+  console.log(
+    "shopping cart information passed from the frontend createOrder() callback:",
+    cart,
+  );
+
+  const accessToken = await generateAccessToken();
+  const url = `${base}/v2/checkout/orders`;
+  const payload = {
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: "USD",
+          value: cart[0].quantity,
+          breakdown: {
+            item_total: {
+              currency_code: "USD",
+              value: cart[0].quantity,
+            }
+          }
+        },
+        description: cart[0].description + " -  E-SHIPPING",
+        name: 'Order from Usatags',
+        shipping: {
+          method: "E-SHIPPING",
+        },
+        items: [
+          {
+            name: 'Order from Usatags',
+            quantity: '1',
+            category: 'DIGITAL_GOODS',
+            description: cart[0].description,
+            unit_amount: {
+              currency_code: "USD",
+              value: cart[0].quantity,
+            }
+          }
+        ]
+      },
+    ],
+    application_context: {
+      shipping_preference: "NO_SHIPPING",
+      brand_name: "Usatags",
+    }
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
+      // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
+      // "PayPal-Mock-Response": '{"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}'
+      // "PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}'
+      // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
+    },
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse(response);
+};
+
+/**
  * Capture payment for the created order to complete the transaction.
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
  */
@@ -311,13 +389,13 @@ app.post("/api/orders", async (req, res) => {
             }
           },
           description: cart[0].description + " -  E-SHIPPING",
-          name: String(cart[0].description) + ' - E-SHIPPING',
+          name: 'Order from Usatags',
           shipping: {
             method: "E-SHIPPING",
           },
           items: [
             {
-              name: String(cart[0].description) + ' - E-SHIPPING',
+              name: 'Order from Usatags',
               quantity: '1',
               category: 'DIGITAL_GOODS',
               description: cart[0].description,
@@ -331,7 +409,7 @@ app.post("/api/orders", async (req, res) => {
       ],
       application_context: {
         shipping_preference: "NO_SHIPPING",
-        brand_name: "PlacasTemporales",
+        brand_name: "Usatags",
       }
     })
 
@@ -388,7 +466,7 @@ app.post('/completePurchase', async (req, res) => {
     console.log('Error from completePurchase', error)
     res.status(500).json({ error: 'Internal server error' })
   }
-}) 
+})  
 
 app.post('/updatePurchase', async (req, res) => {
   try {
@@ -468,7 +546,7 @@ return response.data.access_token
  * Create an order to start the transaction.
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
  */
-const createOrder2 = async (cart) => {
+const createOrder2 = async (cart, return_url, cancel_url) => {
   const accessToken = await generateAccessToken2()
 
   const response = await axios({
@@ -487,7 +565,7 @@ const createOrder2 = async (cart) => {
                 value: cart[0].quantity,
               },
               description: cart[0].description + " -  E-SHIPPING",
-              name: String(cart[0].description) + ' - E-SHIPPING',
+              name: 'Order from Usatags',
               shipping: {
                 method: "E-SHIPPING",
               }
@@ -495,18 +573,21 @@ const createOrder2 = async (cart) => {
           ],
           payment_source: {
             paypal: {
-              brand_name: "PlacasTemporales",
+              brand_name: "Usatags",
               shipping_preference: "E_SHIPPING"
             }
           },
           application_context: {
-            brand_name: "PlacasTemporales",
+            brand_name: "Usatags",
             user_action: "PAY_NOW",
             shipping_preference: "NO_SHIPPING",
+            return_url,
+            cancel_url,
           }
         })
   })
 
+  console.log(response.data.id)
   return response.data.links.find(link => link.rel === 'payer-action').href
 };
 
@@ -514,7 +595,7 @@ const createOrder2 = async (cart) => {
 
 app.post("/pay", async (req, res) => {
   try {
-    const url = await createOrder2(req.body.cart);
+    const url = await createOrder2(req.body.cart, req.body.return_url, req.body.cancel_url);
     res.status(200).json({ url });
   } catch (error) {
     console.log('Error from pay', error)
