@@ -1001,7 +1001,163 @@ app.post("/pay", async (req, res) => {
     console.log('Error from pay', error)
   }
 })
-  
+
+//save data for future purchases
+app.post("/auth/register", async (req, res) => {
+  try {
+    const { email, password } = req.body
+    const user = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (user) {
+      return res.status(400).json({ error: 'User already exists' })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword
+      }
+    })
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from auth/register', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body
+    const user = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password)
+
+    if (!validPassword) {
+      return res.status(400).json({ error: 'Invalid password' })
+    }
+
+    return res.status(200).json({
+      data: {
+        email: user.email
+      },
+      message: 'User logged in successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from auth/login', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post("/auth/save/purchase", async (req, res) => {
+  try {
+    const { email, purchaseData } = req.body
+    if (!email) {
+      return res.status(400).json({ error: 'Missing email' })
+    }
+
+    if (!purchaseData) {
+      return res.status(400).json({ error: 'Missing purchase data' })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const savedPurchase = await prisma.savedPurchaseDetails.findFirst({
+      where: {
+        data: purchaseData
+      }
+    })
+
+    if (savedPurchase) {
+      return res.status(400).json({ error: 'Purchase already saved' })
+    }
+
+    await prisma.savedPurchaseDetails.create({
+      data: {
+        data: purchaseData,
+        userId: user.id,
+      }
+    })
+
+    return res.status(200).json({
+      message: 'Purchase saved successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from auth/save/purchase', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.get("/auth/saved/purchases/:userID", async (req, res) => {
+  try {
+    const { userID } = req.params
+    const savedPurchases = await prisma.savedPurchaseDetails.findMany({
+      where: {
+        userId: userID
+      }
+    })
+
+    return res.status(200).json({
+      data: savedPurchases,
+      message: 'Saved purchases fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from auth/saved/purchases/:userID', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.get("/auth/saved/purchase/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+    const savedPurchase = await prisma.savedPurchaseDetails.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!savedPurchase) {
+      return res.status(404).json({ error: 'Saved purchase not found' })
+    }
+
+    return res.status(200).json({
+      data: savedPurchase,
+      message: 'Saved purchase fetched successfully',
+      success: true
+    })
+  } catch (error) {
+    console.log('Error from auth/saved/purchase/:id', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`)

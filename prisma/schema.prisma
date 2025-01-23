@@ -85,14 +85,22 @@ model PlateDetailsCodes {
 
 model User {
   id String @id @default(uuid())
-  username String?
-  email String? @unique
-  password String?
-  image String?
-  phone_number String?
-  socketId String?
+  username String? @default("User")
+  email String @unique
+  password String
+  image String? @default("NN")
+  phone_number String? @default("NN")
+  socketId String? @default("NN")
   active Boolean? @default(false)
   admin Boolean? @default(false)
   createdAt DateTime @default(now())
+  savedPurchaseDetails SavedPurchaseDetails[]
 }
 
+model SavedPurchaseDetails {
+  id String @id @default(uuid())
+  data String
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  createdAt DateTime @default(now())
+}
