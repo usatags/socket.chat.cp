@@ -15,7 +15,7 @@
     "@libsql/client": "^0.4.3",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@prisma/adapter-libsql": "^5.9.1",
-    "@prisma/client": "5.9.1",
+    "@prisma/client": "^6.4.1",
     "axios": "^1.7.3",
     "bcrypt": "^5.1.1",
     "bull": "^4.16.3",
@@ -30,9 +30,11 @@
     "jsonwebtoken": "^9.0.2",
     "mapbox-gl": "^3.4.0",
     "nodemailer": "^6.9.13",
-    "prisma": "^5.9.1",
     "socket.io": "^4.7.4",
     "socket.io-client": "^4.7.4",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.4.1"
   }
 }
